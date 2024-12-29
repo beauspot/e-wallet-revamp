@@ -1,0 +1,19 @@
+{
+  "name": "e-wallet-backend",
+  "version": "2.1.0",
+  "main": "server.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beauspot/e-wallet-revamp.git"
+  },
+  "author": "Beau Iyere",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/beauspot/e-wallet-revamp/issues"
+  },
+  "homepage": "https://github.com/beauspot/e-wallet-revamp#readme",
+  "description": ""
+}
