@@ -1,0 +1,53 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "rootDir": "src",
+    "outDir": "dist",
+    "removeComments": true,
+    "noEmitOnError": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "allowUnreachableCode": false,
+    "skipLibCheck": true,
+    "lib": ["esnext"],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strictPropertyInitialization": false,
+    "resolveJsonModule": true,
+    "baseUrl": "./",
+    "typeRoots": ["./node_modules/@types", "./src/api/types"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/api/*": ["./src/api/*"],
+      "@/db/*": ["./src/api/db/*"],
+      "@/helpers/*": ["./src/api/helpers/*"],
+      "@/controllers/*": ["./src/api/controllers/*"],
+      "@/routes/*": ["./src/api/routes/*"],
+      "@/services/*": ["./src/api/services/*"],
+      "@/schemas/*": ["./src/api/helpers/schemas/*"],
+      "@/configs/*": ["./src/api/helpers/configs/*"],
+      "@/DTO/*": ["./src/api/helpers/DTO/*"],
+      "@/enum/*": ["./src/api/helpers/enum/*"],
+      "@/interfaces/*": ["./src/api/helpers/interfaces/*"],
+      "@/lib/*": ["./src/api/helpers/lib/*"],
+      "@/middlewares/*": ["./src/api/helpers/middlewares/*"],
+      "@/utils/*": ["./src/api/helpers/utils/*"],
+      "@/__test__/*": ["./src/__tests__/*"],
+      "@/integrations/*": ["./src/api/helpers/integrations/*"],
+      "@/types/*": ["./src/api/types/*"]
+    }
+  },
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  },
+  "include": ["src/**/*.ts", "src/api/types/**/*.d.ts", "src/__tests__/*"],
+  "exclude": ["node_modules", "package.json", "coverage"]
+}
