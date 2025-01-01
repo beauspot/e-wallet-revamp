@@ -4,3 +4,4 @@ node_modules
 .env
 coverage
 jots.ts
+src/__tests__/setupdb.ts
