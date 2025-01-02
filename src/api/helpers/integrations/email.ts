@@ -41,7 +41,7 @@ export class Email implements EmailClassConfiguration {
     }
 
     async sendWelcome(): Promise<void> {
-        await this.send("Welcome", `<h1>Welcome to E-walletPay, ${this.firstName}!</h1>`);
+        await this.send("Welcome", `<h1>Welcome to WalletHub, ${this.firstName}!</h1>`);
     }
 
     async sendPasswordReset():Promise<void>  {
