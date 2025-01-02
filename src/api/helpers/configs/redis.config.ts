@@ -17,7 +17,36 @@ const redisStore = new RedisStore({
         stringify: JSON.stringify,
         parse: JSON.parse,
     },
-})
+});
+
+// Cache helper function 
+const CacheData = async (key: string, ttl: number, fetchData: () => Promise<any>) => {
+    try {
+        // Check Redis for cached data
+        const cachedData = await redisClient.get(key);
+
+        if (cachedData) {
+            log.info(`Cache hit for key: ${key}`);
+            // return parsed cached data
+
+            // return JSON.parse(cachedData)
+            return JSON.parse(cachedData.toString()); 
+        }
+
+        // Fetch new data if not cached 
+        log.info(`Cache miss for key: ${key}. Fetching new data...`);
+        const data = await fetchData();
+
+        // Cache the new Data with ttl (time-to-live)
+        await redisClient.setex(key, ttl, JSON.stringify(data));
+        log.info(`Data cahced for key: ${key} with TTL: ${ttl} seconds.`);
+
+        return data;
+    } catch (err: unknown) {
+        log.error(`Error Handling cache for key: ${key}. Message: ${err}`);
+        throw err;
+    }
+}
 
 const shutdownClient = async (redisClient: Redis) => {
     try {
@@ -51,5 +80,6 @@ redisClient.on('error', (err: Error) => {
 export default {
     redisClient,
     redisStore,
-    shutdownClient
+    CacheData,
+    shutdownClient,
 }
