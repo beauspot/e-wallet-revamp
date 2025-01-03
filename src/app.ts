@@ -1,4 +1,3 @@
-import "reflect-metadata";
 import cors from "cors";
 import path from "path";
 import YAML from "yamljs";

@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import log from "@/utils/logging";
 
 import dotenv from "dotenv";
