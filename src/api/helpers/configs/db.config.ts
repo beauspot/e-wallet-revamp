@@ -9,22 +9,45 @@ import { UserTransactionModel } from "@/db/transactions.entity";
 
 dotenv.config();
 
+// Load the appropriate .env file based on NODE_ENV
+if (process.env.NODE_ENV === "test") {
+  dotenv.config({ path: ".env.test" }); // Explicitly load .env.test
+} else {
+  dotenv.config(); // Load the default .env
+}
+
+log.info(process.env.NODE_ENV + " Environment");
+
+const {
+  DB_HOST,
+  DB_PORT,
+  DB_USER,
+  DB_PWD,
+  DB_NAME,
+} = process.env;
+
+// Fail fast if required environment variables are missing
+if (!DB_HOST || !DB_PORT || !DB_USER || !DB_PWD || !DB_NAME) {
+  log.error("One or more required database environment variables are missing.");
+  throw new Error("Database configuration error: Missing environment variables.");
+}
+
 export const AppDataSource = new DataSource({
   type: "postgres",
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT) || undefined,
-  username: process.env.DB_USER || undefined,
-  password: String(process.env.DB_PWD) ,
-  database: process.env.DB_NAME || undefined,
+  host: DB_HOST,
+  port: Number(DB_PORT),
+  username: DB_USER,
+  password: DB_PWD,
+  database: DB_NAME,
   entities: [
     User,
     UserWallet,
     SettlementAcct,
     UserTransactionModel,
   ],
-  synchronize: true, // TODO: set to false in prod
   logging: false,
 });
+
 
 export const db_init = async () => {
   try {
