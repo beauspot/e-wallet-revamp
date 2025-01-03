@@ -5,6 +5,9 @@ import log from "@/utils/logging";
 const redisClient = new Redis({
     host: process.env.REDIS_URL_HOST,
     port: process.env.REDIS_URL_PORT ? parseInt(process.env.REDIS_URL_PORT, 10) : undefined,
+    maxRetriesPerRequest: null,
+    enableOfflineQueue: false,
+    offlineQueue: false,
     db: 4
 });
 
