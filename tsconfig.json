@@ -44,7 +44,8 @@
       "@/__test__/*": ["./src/__tests__/*"],
       "@/integrations/*": ["./src/api/helpers/integrations/*"],
       "@/types/*": ["./src/api/types/*"],
-      "@/queues/*": ["./src/api/helpers/queues/*"]
+      "@/queues/*": ["./src/api/helpers/queues/*"],
+      "@/templates/*": ["./src/api/helpers/templates/*"]
     }
   },
   "ts-node": {
