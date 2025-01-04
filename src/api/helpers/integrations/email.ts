@@ -6,17 +6,19 @@ interface User {
     firstName: string;
 }
 
-export class Email implements EmailClassConfiguration {
+export class EmailService implements EmailClassConfiguration {
     private to: string;
     private firstName: string;
     private resetToken: string;
     private from: string;
+    private otp: string;
 
-    constructor(user: User, resetToken: string) {
+    constructor(user: User, resetToken: string, otp: string) {
         this.to = user.email;
         this.firstName = user.firstName;
         this.resetToken = resetToken;
         this.from = ` WalletHub: <${process.env.EMAIL_FROM}>`;
+        this.otp = otp;
     }
 
     private newTransport() {
@@ -38,6 +40,15 @@ export class Email implements EmailClassConfiguration {
             html: template,
         };
         await this.newTransport().sendMail(mailOptions);
+    }
+
+    // This are just examples of sending mails to the user
+
+    async sendOTPMail(): Promise<void> {
+        await this.send(
+            "Verification OTP",
+            `<p>Your One-Time Password to verify your email is <strong>${this.otp}</strong>. Note: It is valid for only 30 seconds.</p>`
+        );
     }
 
     async sendWelcome(): Promise<void> {
