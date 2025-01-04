@@ -5,3 +5,4 @@ node_modules
 coverage
 jots.ts
 .env.test
+/src/api/helpers/templates
