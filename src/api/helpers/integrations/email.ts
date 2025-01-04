@@ -1,5 +1,10 @@
 import * as nodemailer from "nodemailer";
+import otpgenerator from "otp-generator";
 import { EmailClassConfiguration } from "@/interfaces/email.interface";
+
+import redisDB from "@/configs/redis.config";
+
+const { redisClient } = redisDB;
 
 interface User {
     email: string;
@@ -21,6 +26,27 @@ export class EmailService implements EmailClassConfiguration {
         this.otp = otp;
     }
 
+    private async generateAndSaveOTP(): Promise<string> {
+        // Generate a 6-digit numeric OTP
+        const otp = otpgenerator.generate(6, { upperCaseAlphabets: false, specialChars: false })
+        
+        // Save the OTP in Redis with a 5-minute expiration
+        await redisClient.setex(`otp:${this.to}`, 300, otp); // key expires in 300seconds 
+
+        return otp;
+    };
+
+    async __sendOTPMail__(): Promise<void> {
+        // Generate & save otp
+        const otp = await this.generateAndSaveOTP();
+
+        // Email content 
+        const template = `<p>Your One-Time Password to verify your email is <strong>${otp}</strong>. Note: It is valid for only 5 minutes.</p>`;
+
+        // Send the email
+        await this.send("Verification OTP", template);
+    }
+
     private newTransport() {
         return nodemailer.createTransport({
             service: process.env.EMAIL_SERVICE || "Gmail",
@@ -32,7 +58,7 @@ export class EmailService implements EmailClassConfiguration {
     }
 
     // Send the actual email
-    private async send(subject: string, template: string) {
+    async send(subject: string, template: string) {
         const mailOptions = {
             from: this.from,
             to: this.to,
