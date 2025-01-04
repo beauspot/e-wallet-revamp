@@ -94,6 +94,22 @@ mailQueueEvents.on("failed", (jobId, failedReson) => {
     log.error(`Job failed: ${jobId}, Reason: ${failedReson}`);
 });
 
+// listening to completed or failed jobs by attaching listeners to the workers
+mailWorker.on("completed", (job: Job) => console.info(`Job ${job.id} completed successfully`));
+mailWorker.on("failed", (job, err) => console.error(`Job ${job!.id} failed with error: ${err.message}`));
+
+mailWorker.on("ready", () => {
+    console.info("Worker is ready and connected to Bull/Redis.");
+});
+
+mailWorker.on("stalled", (jobId) => {
+    console.warn(`Job ${jobId} has stalled and will be retried.`);
+});
+
+mailWorker.on("error", (err) => {
+    console.error(`Worker encountered an error: ${err.message}`);
+});
+
 
 export default {
     addMailToQueue,
