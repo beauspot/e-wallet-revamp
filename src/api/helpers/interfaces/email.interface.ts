@@ -3,6 +3,7 @@ interface EmailClassConfiguration {
     sendWelcome(): Promise<void>;
     sendPasswordReset(): Promise<void>;
     sendPinReset(): Promise<void>;
+    send(subject: string, template: string): Promise<void>;
 }
 
 interface Email {
@@ -15,4 +16,4 @@ interface Email {
 export {
     Email,
     EmailClassConfiguration
-}
+};
