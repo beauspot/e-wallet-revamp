@@ -30,7 +30,7 @@ const emailQueue = new Queue<Email>("email-queues", {
 const addMailToQueue = async (email: Email): Promise<void> => {
     try {
         await emailQueue.add(email.subject, email, {
-            priority: 2, // Priority level for the job
+            priority: 1, // Priority level for the job
         });
         log.info(`Email job added to the queue: ${email.subject}`);
     } catch (error: unknown) {
@@ -113,5 +113,6 @@ mailWorker.on("error", (err) => {
 
 export default {
     addMailToQueue,
-    mailWorker
+    mailWorker,
+    workerOptions
 }
