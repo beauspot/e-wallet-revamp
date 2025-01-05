@@ -3,7 +3,6 @@ import {
     Queue,
     Job,
     QueueEvents,
-    WorkerOptions,
     ConnectionOptions
 } from "bullmq";
 
@@ -12,18 +11,9 @@ import redisModule from "@/configs/redis.config";
 import QueueServices from "@/queues/email.queues";
 import { Flw } from "@/integrations/flutterwave";
 import { virtualAccountPayload as VANPayload } from "@/interfaces/flutterwave.interface";
-import { verifyBvn } from "../integrations/dojah";
 
-const transactionModel = typeof UserTransactionModel;
 const { redisClient } = redisModule;
 const { workerOptions } = QueueServices;
-
-const flutterwave = new Flw(
-    process.env.FLUTTERWAVE_PUBLIC_KEY,
-    process.env.FLUTTERWAVE_SECRET_KEY,
-    process.env.FLUTTERWAVE_ENCRYPTION_KEY,
-    UserTransactionModel,
-)
 
 let connection: ConnectionOptions = redisClient;
 
@@ -118,3 +108,8 @@ vanWorker.on("stalled", (jobId) => {
 vanWorker.on("error", (err) => {
     console.error(`Worker encountered an error: ${err.message}`);
 });
+
+export default {
+    addVANToQueue,
+    vanWorker,
+}
