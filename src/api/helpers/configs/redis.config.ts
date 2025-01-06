@@ -11,8 +11,6 @@ const redisClient = new Redis({
     db: 4
 });
 
-
-
 if (redisClient) 
     log.info("connected to the queue redis cluster");
 
