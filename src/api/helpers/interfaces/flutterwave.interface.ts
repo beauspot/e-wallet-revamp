@@ -56,8 +56,7 @@ interface virtualAccountPayload {
     lastName?: string;
     phoneNumber?: string;
     narration?: string;
-    userId: string;
-    walletId: string;
+    userId?: string;
 }
 
 
