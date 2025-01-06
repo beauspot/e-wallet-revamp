@@ -19,7 +19,7 @@ import WalletQueue from '@/queues/wallet.queues';
 
 @Service()
 export class UserService implements UserSercviceInterface {
-    constructor(private userEntity: typeof User, private userWalletEntity: typeof UserWallet, private flutterwave: Flw) { }
+    constructor(private userEntity: typeof User, private userWalletEntity: typeof UserWallet) { }
 
     IV_LENGTH = 16;
 
@@ -38,29 +38,44 @@ export class UserService implements UserSercviceInterface {
     }
 
     private encryptData(text: string): string {
-        // Generate a random Iitialization Vector (IV)
+        if (!process.env.ENCRYPTION_KEY || process.env.ENCRYPTION_KEY.length !== 64) {
+            throw new AppError("Invalid ENCRYPTION_KEY: Key must be a 64-character hexadecimal string");
+        }
+
+        // Convert the hexadecimal ENCRYPTION_KEY to a 32-byte Buffer
+        const encryptionKey = Buffer.from(process.env.ENCRYPTION_KEY, 'hex');
+
+        // Generate a random Initialization Vector (IV)
         const iv = crypto.randomBytes(this.IV_LENGTH);
-        const cipher = crypto.createCipheriv('aes-256-cbc', process.env.ENCRYPTION_KEY!, iv);
+        const cipher = crypto.createCipheriv('aes-256-cbc', encryptionKey, iv);
 
         let encrypted = cipher.update(text, 'utf8', 'hex');
         encrypted += cipher.final('hex');
 
         return iv.toString('hex') + ":" + encrypted;
-    };
+    }
+
 
 
     private decryptData(encryptedText: string): string {
+        if (!process.env.ENCRYPTION_KEY || process.env.ENCRYPTION_KEY.length !== 64) {
+            throw new AppError("Invalid ENCRYPTION_KEY: Key must be a 64-character hexadecimal string");
+        }
+
+        // Convert the hexadecimal ENCRYPTION_KEY to a 32-byte Buffer
+        const encryptionKey = Buffer.from(process.env.ENCRYPTION_KEY, 'hex');
+
         const parts = encryptedText.split(":");
         const iv = Buffer.from(parts[0], 'hex');
         const encryptedData = parts[1];
 
-        const decipher = crypto.createDecipheriv('aes-256-cbc', process.env.ENCRYPTION_KEY!, iv);
+        const decipher = crypto.createDecipheriv('aes-256-cbc', encryptionKey, iv);
 
         let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
         decrypted += decipher.final('utf8');
 
         return decrypted;
-    }
+    };
 
     async registerUser(userData: Partial<userInterface>) {
         try {
@@ -73,32 +88,27 @@ export class UserService implements UserSercviceInterface {
 
             const userRepository = AppDataSource.getRepository(this.userEntity).create({
                 ...userData,
-                nin: encryptNIN,
-                bvn: encryptBVN,
+                // nin: encryptNIN,
+                // bvn: encryptBVN,
                 password: hashedPassword,
             });
 
             const savedUser = await AppDataSource.getRepository(this.userEntity).save(userRepository);
+            // log.info(savedUser);
 
-            const walletRepository = AppDataSource.getRepository(this.userWalletEntity).create({
-                balance: 0,
-                user: savedUser
-            });
-
-
+            // Add the VAN creation job to the queue
             const vanPayload: VANPayload = {
                 firstName: savedUser.firstName,
                 lastName: savedUser.lastName,
                 email: savedUser.email,
                 phoneNumber: savedUser.phoneNumber,
                 bvn: savedUser.bvn,
-                userId: savedUser.id,
-                walletId: walletRepository.id,
-                is_permanent: true
+                is_permanent: true,
             };
+           
+            const savedWallet = await WalletQueue.addVANToQueue(vanPayload);
 
-            await WalletQueue.addVANToQueue(vanPayload);
-            const savedWallet = await AppDataSource.getRepository(this.userWalletEntity).save(walletRepository);
+            log.info(savedWallet);
 
             return { user: savedUser, wallet: savedWallet };
         } catch (error: any) {
