@@ -12,7 +12,7 @@ import redisModule from "@/configs/redis.config";
 import __404_err_page from "@/middlewares/__404_notfound";
 import errorHandlerMiddleware from "@/middlewares/errHandler";
 import { logging_middleware } from "@/middlewares/loggingmiddleware";
-// import authRouter from "@/routes/users.routes";
+import authRouter from "@/routes/user.routes";
 // import walletRouter from "@/routes/wallet.routes";
 
 // Redis
@@ -78,6 +78,8 @@ function createAppServer(): Express {
             '<h1>E-Wallet API Documentation</h1><a href="/api-docs">Documentation</a>'
         );
     });
+
+    app.use("/auth", authRouter);
 
     return app;
 };
