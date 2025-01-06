@@ -25,22 +25,14 @@ interface DecodedToken {
 };
 
 interface UserSercviceInterface {
-  // SendOtp(phoneNumber: string): Promise<VerificationInstance>;
-  // VerifyOtp(phoneNumber: string, otp: string): Promise<String>;
-  signToken(userId: string): string;
-  createSendToken(user: Partial<User>, res: Response): Promise<{ user: User, token: string }>
   registerUser(userData: Partial<userInterface>): Promise<{ user: User }>;
   loginUser(phoneNumber: string, password: string): Promise<User>;
   createTransactionPin(pin: string): Promise<{ userWallet: string }>;
-
-  // Using type "any" cause we do not know the actual shape of the object.
-  // verifyBvnData(firstName: string, lastName: string, bvn: string, dob: Date): Promise<any>
-
-  // forgotPassword(email: string): Promise<string>;
+  forgotPassword(email: string): Promise<string>;
   forgotTransactionPin(email: string): Promise<string>;
-  // resetPassword(email: string, otp: string, newPassword: string): Promise<string>;
+  resetPassword(email: string, otp: string, newPassword: string): Promise<string>;
   resetTransactionPin(email: string, otp: string, newPin: string): Promise<string>;
-  // updatePassword(userId: string, currentPassword: string, newPassword: string): Promise<string>;
+  updatePassword(userId: string, currentPassword: string, newPassword: string): Promise<string>;
   updateTransactionPin(userId: string, currentPin: string, newPin: string): Promise<string>;
   logout(res:Response): Promise<void>;
 };
