@@ -51,11 +51,13 @@ interface virtualAccountPayload {
     email: string;
     bvn: string;
     tx_ref?: string;
-    is_permanent?: boolean;
+    is_permanent: true;
     firstName?: string;
     lastName?: string;
     phoneNumber?: string;
     narration?: string;
+    userId: string;
+    walletId: string;
 }
 
 
