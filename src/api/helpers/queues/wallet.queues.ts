@@ -1,123 +1,130 @@
-    import { Worker, Queue, Job, QueueEvents, ConnectionOptions } from "bullmq";
+import crypto from "crypto";
+import { Worker, Queue, Job, QueueEvents, ConnectionOptions } from "bullmq";
 
-    import { UserTransactionModel } from "@/db/transactions.entity";
-    import redisModule from "@/configs/redis.config";
-    import QueueServices from "@/queues/email.queues";
-    import { Flw } from "@/integrations/flutterwave";
-    import { virtualAccountPayload as VANPayload } from "@/interfaces/flutterwave.interface";
+import { User } from "@/db/user.entity";
+import { UserWallet } from "@/db/wallet.entity";
+import { UserTransactionModel } from "@/db/transactions.entity";
+import redisModule from "@/configs/redis.config";
+import { Flw } from "@/integrations/flutterwave";
+import AppError from "@/utils/appErrors";
+import { AppDataSource } from "@/configs/db.config";
+import { virtualAccountPayload as VANPayload } from "@/interfaces/flutterwave.interface";
 
-    const { redisClient } = redisModule;
-    const { workerOptions } = QueueServices;
-    const connection: ConnectionOptions = redisClient;
+const { redisClient } = redisModule;
+const connection: ConnectionOptions = redisClient;
 
-    // create the virtual account number queue
-    const CreateVirtualAccountQueue = new Queue<VANPayload>("FLW-queues", {
-        connection,
-        defaultJobOptions: {
-            attempts: 5,
-            backoff: {
-                type: 'exponential',
-                delay: 1000, // retry after 1sec
-            }
+// create the virtual account number queue
+const CreateVirtualAccountQueue = new Queue<VANPayload>("FLW-queues", {
+    connection,
+    defaultJobOptions: {
+        attempts: 5,
+        backoff: {
+            type: 'exponential',
+            delay: 1000, // retry after 1sec
         }
-    });
+    }
+});
 
 /**
 * Add a VAN job to the queue
-* @param opt - VANPayload containing virtual account details
+* @param vanpayload - VANPayload containing virtual account details
 */
 
-    const addVANToQueue = async (opt: VANPayload): Promise<void> => {
-        try {
-            await CreateVirtualAccountQueue.add(opt.bvn, opt, {
-                priority: 2, // Priority level for the job
-            });
-            log.info(`VAN job added to the queue: ${opt.firstName}`);
-        } catch (error: unknown) {
-            log.error('Error adding email job:', error);
-            throw error;
-        }
-    };
+const addVANToQueue = async (vanpayload: VANPayload): Promise<void> => {
+    try {
+        await CreateVirtualAccountQueue.add("FLW-queues", vanpayload, {
+            priority: 2, // Priority level for the job
+        });
+        log.info(`VAN job added to the queue: ${vanpayload.firstName}`);
+    } catch (error: any) {
+        log.error('Error adding email job:', error);
+        throw new AppError('Error adding email job:', error.messsage);
+    }
+};
 
+const createVirtualAccountWorker = new Worker<VANPayload>('FLW-queues', async (job: Job<VANPayload>) => {
+    const { userId } = job.data;
+
+    try {
+        const walletRepository = AppDataSource.getRepository(UserWallet);
+        const userRepository = AppDataSource.getRepository(User);
+
+        // Fetch the customer 
+        const user = await userRepository.findOne({ where: { id: userId } });
+        if (!user) throw new AppError(`User with ID ${userId} not found.`)
+        
+        const transactionPin = crypto.randomBytes(2).toString("hex"); // Generates a random 4 character PIN
+        // create & save the user's wallet;
+        const newWallet = walletRepository.create({
+            balance: 0,
+            user,
+            transaction_pin: transactionPin,
+        });
+
+        const saveWallet = await walletRepository.save(newWallet);
+
+        log.info(`Virtual account successfully created for User ID ${userId}. Wallet ID: ${saveWallet.id}`);
+        return saveWallet;
+    } catch (error: any) {
+        throw new AppError(`Error processing Job ${job.id}: ${error.message}`)
+    }
+}, {
+    connection,
+    maxStalledCount: 10,
+    stalledInterval: 1000 * 60 * 5, // 5 minutes
+    concurrency: 1, // Limit the number of concurrent jobs to 1 (optional)
+    limiter: {
+        max: 1,
+        duration: 1000
+    }, // Processes an email every second
+    lockDuration: 5000,
+    removeOnComplete: {
+        age: 3600, // save up to an hour 
+        count: 1000, // save up to 1000 jobs
+    },
+    removeOnFail: {
+        age: 24 * 3600, // Keep failed jobs up to 24hrs
+    },
+});
+
+// Handle worker Events NB - This is optional
 /**
 * Process a VAN job
 * @param job - Job<VANPayload>
 */
+// const processVANJob = 
 
-    const processVANJob = async (job: Job<VANPayload>): Promise<void> => {
-        const {
-            email,
-            bvn,
-            tx_ref,
-            is_permanent,
-            firstName,
-            lastName,
-            phoneNumber,
-            narration,
-            userId,
-            walletId
-        } = job.data;
+// listening to completed or failed jobs by attaching listeners to the workers
+createVirtualAccountWorker.on("completed", (job) => log.info(`Job ${job.id} has been completed successfully`));
 
-        try {
-            const flutterwave = new Flw(
-                process.env.FLUTTERWAVE_PUBLIC_KEY,
-                process.env.FLUTTERWAVE_SECRET_KEY,
-                process.env.FLUTTERWAVE_ENCRYPTION_KEY,
-                UserTransactionModel,
-            );
+createVirtualAccountWorker.on("failed", (job, err) => log.error(`Job ${job?.id} failed with error: ${err.message}`))
 
-            const payload: VANPayload = {
-                email,
-                bvn,
-                tx_ref,
-                is_permanent,
-                firstName,
-                lastName,
-                phoneNumber,
-                narration,
-                userId,
-                walletId
-            };
-            await flutterwave.createVAN(payload)
-        } catch (error: unknown) {
-            log.error(`Error processing VAN job for ${firstName} ${lastName}:`, error);
-            throw error;
-        }
-    };
+const vanQueueEvents = new QueueEvents("FLW-queues", {
+    connection
+});
 
-    // Create worker to process the VAN jobs.
-    const vanWorker = new Worker<VANPayload>("FLW-queues", async (job: Job<VANPayload>) => await processVANJob(job), workerOptions);
+vanQueueEvents.on("completed", (jobId) => {
+    log.info(`Job completed successfully: ${jobId}`);
+});
 
-    // Handle worker Events NB - This is optional
-    const vanQueueEvents = new QueueEvents("FLW-queues", {
-        connection
-    });
+vanQueueEvents.on("failed", (jobId, failedReson) => {
+    log.error(`Job failed: ${jobId}, Reason: ${failedReson}`);
+});
 
-    vanQueueEvents.on("completed", (jobId) => {
-        log.info(`Job completed successfully: ${jobId}`);
-    });
 
-    vanQueueEvents.on("failed", (jobId, failedReson) => {
-        log.error(`Job failed: ${jobId}, Reason: ${failedReson}`);
-    });
+createVirtualAccountWorker.on("ready", () => {
+    log.info("Worker is ready and connected to Bull/Redis.");
+});
 
-    // listening to completed or failed jobs by attaching listeners to the workers
-    vanWorker.on("completed", (job: Job) => console.info(`Job ${job.id} completed successfully`));
-    vanWorker.on("failed", (job, err) => console.error(`Job ${job!.id} failed with error: ${err.message}`));
+createVirtualAccountWorker.on("stalled", (jobId) => {
+    log.warn(`Job ${jobId} has stalled and will be retried.`);
+});
 
-    vanWorker.on("ready", () => {
-        console.info("Worker is ready and connected to Bull/Redis.");
-    });
+createVirtualAccountWorker.on("error", (err) => {
+    log.error(`Worker encountered an error: ${err.message}`);
+});
 
-    vanWorker.on("stalled", (jobId) => {
-        console.warn(`Job ${jobId} has stalled and will be retried.`);
-    });
-
-    vanWorker.on("error", (err) => {
-        console.error(`Worker encountered an error: ${err.message}`);
-    });
-
-    export default {
-        addVANToQueue,
-        vanWorker,
-    }
+export default {
+    addVANToQueue,
+    createVirtualAccountWorker,
+}
