@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import asynchandler from "express-async-handler"
 import { StatusCodes } from "http-status-codes";
 import AppError from "@/utils/appErrors";
 import { plainToInstance } from "class-transformer";
@@ -15,7 +16,7 @@ export class UserController{
             const result = await this.userService.registerUser(userData);
             res.status(StatusCodes.CREATED).json(result);
         } catch (error: any) {
-            // console.error(error);
+            console.error(error);
             throw new AppError(`${error.message}`, "failed", false, StatusCodes.SERVICE_UNAVAILABLE)
         }
     }
