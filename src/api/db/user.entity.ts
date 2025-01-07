@@ -4,6 +4,7 @@ import {
   Entity,
   Column,
   BeforeInsert,
+  BeforeUpdate,
   OneToMany,
   OneToOne,
   JoinColumn,
@@ -43,6 +44,9 @@ export class User {
 
   @Column({ type: "varchar", nullable: false })
   password: string;
+
+  @Column({ type: "varchar", length: 255, nullable: false })
+  transaction_pin: string;
 
   @Column({ type: "varchar", unique: true, length: 11, nullable: false })
   nin: string;
@@ -115,8 +119,38 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  @Column({ type: "timestamp", nullable: true })
+  transactionPinResetExpires: Date;
+
+  @Column({ type: "int", default: 0 })
+  transaction_pinResetAttempts: number;
+
+  @Column({ nullable: true })
+  transactionPinResetToken: string;
+
+  @Column({ nullable: true, type: "timestamp" })
+  transactionPinTokenExpires: Date;
+
+  @Column({ default: 0 })
+  transactionResetAttempts: number;
+
+
+  async compareTransactionPin(pin: string): Promise<boolean> {
+    return bcrypt.compare(pin, this.transaction_pin);
+  }
+
+
   async comparePassword(candidatePassword: string): Promise<boolean> {
     return bcrypt.compare(candidatePassword, this.password);
+  }
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  async hashTransactionPin() {
+    if (this.transaction_pin) {
+      const saltRounds = 12;
+      this.transaction_pin = await bcrypt.hash(this.transaction_pin, saltRounds);
+    }
   }
 
   createPasswordResetToken(): string {
