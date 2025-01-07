@@ -18,6 +18,9 @@ if (process.env.NODE_ENV === "test") {
 
 log.info(process.env.NODE_ENV + " Environment");
 
+const isDevelopment = process.env.NODE_ENV;
+const synchronize = isDevelopment ? true : false;
+
 const {
   DB_HOST,
   DB_PORT,
@@ -36,6 +39,7 @@ export const AppDataSource = new DataSource({
   type: "postgres",
   host: DB_HOST,
   port: Number(DB_PORT),
+
   username: DB_USER,
   password: DB_PWD,
   database: DB_NAME,
@@ -46,6 +50,7 @@ export const AppDataSource = new DataSource({
     UserTransactionModel,
   ],
   logging: false,
+  synchronize: synchronize
 });
 
 
