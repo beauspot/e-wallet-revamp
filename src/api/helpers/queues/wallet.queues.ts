@@ -53,12 +53,10 @@ const createVirtualAccountWorker = new Worker<VANPayload>('FLW-queues', async (j
         const user = await userRepository.findOne({ where: { id: userId } });
         if (!user) throw new AppError(`User with ID ${userId} not found.`)
         
-        const transactionPin = crypto.randomBytes(2).toString("hex"); // Generates a random 4 character PIN
         // create & save the user's wallet;
         const newWallet = walletRepository.create({
             balance: 0,
             user,
-            transaction_pin: transactionPin,
         });
 
         const saveWallet = await walletRepository.save(newWallet);
