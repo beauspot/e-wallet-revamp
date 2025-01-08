@@ -49,7 +49,10 @@ export class UserTransactionModel extends BaseEntity {
     @Column({ type: "varchar", nullable: true })
     description: string;
 
-    @ManyToOne(() => User, (user) => user.transactions, { eager: true })
+    @ManyToOne(() => User, (user) => user.transactions, {
+        onDelete: "CASCADE",
+        eager: true
+    })
     @JoinColumn()
     user: User;
 
