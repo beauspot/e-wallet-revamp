@@ -11,9 +11,27 @@ interface Email {
     to: string;
     subject: string;
     text: string;
+};
+
+interface UserForgotPasswordAndTransactionPin {
+    email: string;
+    firstName: string;
+    token: string;
+}
+
+interface ForgotTransactionPinData extends UserForgotPasswordAndTransactionPin{};
+
+interface ForgotPasswordData extends UserForgotPasswordAndTransactionPin { };
+
+interface WelcomeEmailData {
+    firstName: string;
+    otp: string;
 }
 
 export {
     Email,
-    EmailClassConfiguration
+    EmailClassConfiguration,
+    ForgotTransactionPinData,
+    ForgotPasswordData,
+    WelcomeEmailData,
 };
