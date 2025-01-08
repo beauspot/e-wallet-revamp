@@ -125,4 +125,5 @@ createVirtualAccountWorker.on("error", (err) => {
 export default {
     addVANToQueue,
     createVirtualAccountWorker,
+    vanQueueEvents
 }
