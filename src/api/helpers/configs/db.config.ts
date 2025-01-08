@@ -16,7 +16,7 @@ if (process.env.NODE_ENV === "test") {
   dotenv.config(); // Load the default .env
 }
 
-log.info(process.env.NODE_ENV + " Environment");
+log.info(`Current Environment: ${process.env.NODE_ENV} Environment`);
 
 const isDevelopment = process.env.NODE_ENV;
 const synchronize = isDevelopment ? true : false;
