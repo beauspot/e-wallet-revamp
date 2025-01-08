@@ -56,6 +56,13 @@ export class UserTransactionModel extends BaseEntity {
     @JoinColumn()
     user: User;
 
+    @ManyToOne(() => UserWallet, (wallet) => wallet.transactions, {
+        onDelete: "CASCADE",
+        eager: false,
+    })
+    @JoinColumn()
+    wallet: UserWallet;
+
     @BeforeInsert()
     @BeforeUpdate()
     trimFields() {
