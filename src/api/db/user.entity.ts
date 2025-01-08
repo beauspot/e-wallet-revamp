@@ -13,8 +13,9 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import crypto from "crypto";
-import { UserWallet } from "@/db/wallet.entity";
+
 import { gender_enum, userRole } from "@/enum/user.enum";
+import { UserWallet } from "@/db/wallet.entity";
 import { SettlementAcct } from "@/db/settlementAccts.entity";
 import { UserTransactionModel } from "@/db/transactions.entity";
 
@@ -83,18 +84,21 @@ export class User {
 
   @OneToOne(() => SettlementAcct, (settlementAcct) => settlementAcct.userAcct, {
     cascade: true,
+    onDelete: "CASCADE"
   })
   @JoinColumn()
   settlementAcct: SettlementAcct;
 
   @OneToOne(() => UserWallet, (wallet) => wallet.user, {
     cascade: true,
+    onDelete: "CASCADE"
   })
   @JoinColumn()
   wallet: UserWallet;
 
   @OneToMany(() => UserTransactionModel, (transaction) => transaction.user, {
     cascade: true,
+    onDelete: "CASCADE"
   })
   transactions: UserTransactionModel[];
 
