@@ -30,11 +30,7 @@ export class UserWallet extends BaseEntity {
   @JoinColumn()
   user: User;
 
-  @OneToMany(() => UserTransactionModel, (transaction) => transaction.user, {
-    cascade: true,
-    eager: true,
-    onDelete: "CASCADE",
-  })
+  @OneToMany(() => UserTransactionModel, (transaction) => transaction.user)
   @JoinColumn()
   transactions: UserTransactionModel[];
 
