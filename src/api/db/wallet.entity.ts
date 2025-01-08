@@ -8,9 +8,11 @@ import {
   BeforeInsert,
   CreateDateColumn,
   OneToOne,
+  OneToMany,
   JoinColumn,
   BaseEntity,
 } from "typeorm";
+import { UserTransactionModel } from "@/db/transactions.entity";
 import { User } from "@/db/user.entity";
 import crypto from "crypto";
 
@@ -22,9 +24,19 @@ export class UserWallet extends BaseEntity {
   @Column({ type: 'float', default: 0.0 }) // Explicitly define the type
   balance: number;
 
-  @OneToOne(() => User, (user) => user.wallet)
+  @OneToOne(() => User, (user) => user.wallet, {
+    onDelete: "CASCADE",
+  })
   @JoinColumn()
   user: User;
+
+  @OneToMany(() => UserTransactionModel, (transaction) => transaction.user, {
+    cascade: true,
+    eager: true,
+    onDelete: "CASCADE",
+  })
+  @JoinColumn()
+  transactions: UserTransactionModel[];
 
   @BeforeInsert()
   generateId() {
