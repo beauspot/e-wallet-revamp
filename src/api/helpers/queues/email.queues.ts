@@ -8,15 +8,17 @@ import {
 } from "bullmq"
 
 import redisModule from "@/configs/redis.config";
-import { EmailService } from "@/integrations/email";
-import { Email } from '@/interfaces/email.interface';
+import { EmailJobData } from "@/interfaces/email.interface";
+import MailClient from "@/integrations/email"
 
 const { redisClient } = redisModule;
+const { sendEmail } = MailClient;
 
 let connection: ConnectionOptions = redisClient;
+if (!connection) log.info('Connected to queue redis server');
 
 // create the mailing queue
-const emailQueue = new Queue<Email>("email-queues", {
+const emailQueue = new Queue<EmailJobData>("emailQueue", {
     connection,
     defaultJobOptions: {
         attempts: 5,
@@ -27,18 +29,17 @@ const emailQueue = new Queue<Email>("email-queues", {
     }
 });
 
-const addMailToQueue = async (email: Email): Promise<void> => {
+const addMailToQueue = async (email: EmailJobData): Promise<void> => {
+    const { type, data } = email;
     try {
-        await emailQueue.add(email.subject, email, {
-            priority: 1, // Priority level for the job
-        });
-        log.info(`Email job added to the queue: ${email.subject}`);
+        await emailQueue.add(type, email, {
+            ...(data.priority !== "high" && { priority: 1}),
+        })
     } catch (error: unknown) {
         log.error('Error adding email job:', error);
         throw error;
     }
 };
-
 
 const workerOptions: WorkerOptions = {
     connection: redisClient,
@@ -57,32 +58,24 @@ const workerOptions: WorkerOptions = {
     concurrency: 6, // process 6 jobs concurrently
 };
 
-// Function to process email jobs
-const processMailJob = async (job: Job<Email>): Promise<void> => {
-    const { from, to, subject, text } = job.data;
-
-    try {
-        const mailService = new EmailService({ email: to, firstName: "" }, "", "");
-
-        // Send the mail using the email Service
-        await mailService.send(subject, text);
-
-        log.info(`Email sent successfully: ${subject}`);
+const SendMailWorker = new Worker<EmailJobData>(
+    'emailQueue',
+    async (job: Job<EmailJobData>) => { 
+    const { type, data } = job.data;
+        try {
+        log.info(`Processing email job: ${type} for ${data.to}`);
+        await sendEmail(job.data);
+            log.info(`Email sent successfully: ${type} for ${data.to}`);
     } catch (error: unknown) {
         log.error(`Error sending email for job ${job.id}:`, error);
         throw error;
     }
-};
-
-// Create worker to process the email jobs.
-const mailWorker = new Worker<Email>(
-    "email-queues",
-    async (job: Job<Email>) => await processMailJob(job),
+    },
     workerOptions
-);
+)
 
 // Handle worker Events NB - This is optional
-const mailQueueEvents = new QueueEvents("email-queues", {
+const mailQueueEvents = new QueueEvents("emailQueue", {
     connection
 });
 
@@ -95,24 +88,23 @@ mailQueueEvents.on("failed", (jobId, failedReson) => {
 });
 
 // listening to completed or failed jobs by attaching listeners to the workers
-mailWorker.on("completed", (job: Job) => console.info(`Job ${job.id} completed successfully`));
-mailWorker.on("failed", (job, err) => console.error(`Job ${job!.id} failed with error: ${err.message}`));
+SendMailWorker.on("completed", (job: Job) => console.info(`Job ${job.id} completed successfully`));
+// mailWorker.on("failed", (job, err) => console.error(`Job ${job!.id} failed with error: ${err.message}`));
 
-mailWorker.on("ready", () => {
+SendMailWorker.on("ready", () => {
     console.info("Worker is ready and connected to Bull/Redis.");
 });
 
-mailWorker.on("stalled", (jobId) => {
+SendMailWorker.on("stalled", (jobId) => {
     console.warn(`Job ${jobId} has stalled and will be retried.`);
 });
 
-mailWorker.on("error", (err) => {
+SendMailWorker.on("error", (err) => {
     console.error(`Worker encountered an error: ${err.message}`);
 });
 
-
 export default {
     addMailToQueue,
-    mailWorker,
+    // mailWorker,
     workerOptions
 }
