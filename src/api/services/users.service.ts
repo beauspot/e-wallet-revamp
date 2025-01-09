@@ -4,18 +4,25 @@ import crypto from "crypto"
 import { Service } from "typedi";
 import { Response } from "express";
 
-import { EmailService } from "@/api/helpers/integrations/email";
-import { Flw } from "@/api/helpers/integrations/flutterwave";
 import AppError from "@/utils/appErrors";
+import MailClient from "@/integrations/email"
+import redisModule from "@/configs/redis.config";
 import { AppDataSource } from "@/configs/db.config";
+import { EmailJobData } from "@/interfaces/email.interface";
 import { userInterface, UserSercviceInterface } from "@/interfaces/user.interface";
 import { virtualAccountPayload as VANPayload } from "@/interfaces/flutterwave.interface";
 
 import { User } from "@/db/user.entity";
 import { UserWallet } from "@/db/wallet.entity";
 
-import MailingQueue from '@/queues/email.queues';
+// import Queues
 import WalletQueue from '@/queues/wallet.queues';
+import emailQueues from "@/queues/email.queues";
+
+const { redisClient } = redisModule;
+const { addMailToQueue } = emailQueues;
+
+const { TEMPLATES } = MailClient;
 
 @Service()
 export class UserService implements UserSercviceInterface {
@@ -32,9 +39,13 @@ export class UserService implements UserSercviceInterface {
         return bcrypt.compare(inputPassword, hashedPassword);
     }
 
-    private async hashPin(pin: string): Promise<string> {
-        const saltRounds = 12;
-        return bcrypt.hash(pin, saltRounds);
+    private async hashOtp(otp: string): Promise<string> {
+        const saltRounds = 10;
+        return bcrypt.hash(otp, saltRounds);
+    }
+
+    private async verifyOtpHash(inputOtp: string, hashedOtp: string): Promise<boolean> {
+        return bcrypt.compare(inputOtp, hashedOtp);
     }
 
     private encryptData(text: string): string {
@@ -96,6 +107,7 @@ export class UserService implements UserSercviceInterface {
             const savedUser = await AppDataSource.getRepository(this.userEntity).save(userRepository);
             // log.info(savedUser);
 
+            
             // Add the VAN creation job to the queue
             const vanPayload: VANPayload = {
                 firstName: savedUser.firstName,
@@ -105,8 +117,29 @@ export class UserService implements UserSercviceInterface {
                 bvn: savedUser.bvn,
                 is_permanent: true,
             };
-           
+            
             const savedWallet = await WalletQueue.addVANToQueue(vanPayload);
+
+            // Generate OTP and hash it
+            const OTP_EXPIRY_SECONDS = 300;
+            const otp = crypto.randomInt(100000, 999999).toString();
+            const hashedOtp = await this.hashOtp(otp);
+
+            // Save OTP in redis with expiry 
+            await redisClient.setex(`otp:${savedUser.email}`, OTP_EXPIRY_SECONDS, hashedOtp);
+
+            const emailJobData: EmailJobData = {
+                type: "welcomeEmail",
+                data: {
+                    to: savedUser.email,
+                    firstName: savedUser.firstName,
+                    otp,
+                    priority: "high"
+                }
+            };
+
+            const mailingQueue = await addMailToQueue(emailJobData);
+            log.info(mailingQueue);
 
             log.info(savedWallet);
 
@@ -114,6 +147,26 @@ export class UserService implements UserSercviceInterface {
         } catch (error: any) {
             log.error(`Error registering user: ${error.message}`);
             throw new AppError("Error registering user", error.message, false);
+        }
+    };
+
+    async verifyEmailOTP(email: string, otp: string): Promise<boolean> {
+        try {
+            const hashedOtp = await redisClient.get(`otp:${email}`);
+
+            if (!hashedOtp) throw new AppError("Invalid OTP or OTP expired");
+
+            const isMatch = await this.verifyOtpHash(otp, hashedOtp);
+
+            if (!isMatch) throw new AppError("Invalid OTP");
+
+            // Reset OTP expiry
+            await redisClient.expire(`otp:${email}`, 0);
+
+            return true;
+        } catch (error: any) {
+            log.error(`Error verifying OTP: ${error.message}`);
+            throw new AppError("Error verifying OTP", error.message, false);
         }
     }
 }
