@@ -1,37 +1,33 @@
-interface EmailClassConfiguration {
-    sendOTPMail(): Promise<void>;
-    sendWelcome(): Promise<void>;
-    sendPasswordReset(): Promise<void>;
-    sendPinReset(): Promise<void>;
-    send(subject: string, template: string): Promise<void>;
-}
-
-interface Email {
-    from: string;
+export interface CommonDataFields {
     to: string;
-    subject: string;
-    text: string;
-};
-
-interface UserForgotPasswordAndTransactionPin {
-    email: string;
-    firstName: string;
-    token: string;
+    priority?: string;
 }
 
-interface ForgotTransactionPinData extends UserForgotPasswordAndTransactionPin{};
-
-interface ForgotPasswordData extends UserForgotPasswordAndTransactionPin { };
-
-interface WelcomeEmailData {
+export interface WelcomeEmailData extends CommonDataFields {
     firstName: string;
     otp: string;
 }
 
-export {
-    Email,
-    EmailClassConfiguration,
-    ForgotTransactionPinData,
-    ForgotPasswordData,
-    WelcomeEmailData,
+
+export interface ResetPasswordData extends CommonDataFields {
+    firstName: string;
+    otp: string;
+}
+
+export interface ForgotTransactionPinData extends CommonDataFields {
+    firstName: string;
+    otp: string;
+}
+
+export interface __ForgotPasswordData__ extends CommonDataFields {
+    firstName: string;
+    otp: string;
 };
+
+
+export type EmailJobData =
+    | { type: 'welcomeEmail'; data: WelcomeEmailData }
+    | { type: 'resetPassword'; data: ResetPasswordData }
+    | { type: 'forgotPassword'; data: __ForgotPasswordData__ }
+    | { type: 'forgotTransactionPin'; data: ForgotTransactionPinData }
+
