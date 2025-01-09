@@ -26,15 +26,16 @@ interface DecodedToken {
 
 interface UserSercviceInterface {
   registerUser(userData: Partial<userInterface>): Promise<{ user: User }>;
-  loginUser(phoneNumber: string, password: string): Promise<User>;
-  createTransactionPin(pin: string): Promise<{ userWallet: string }>;
-  forgotPassword(email: string): Promise<string>;
-  forgotTransactionPin(email: string): Promise<string>;
-  resetPassword(email: string, otp: string, newPassword: string): Promise<string>;
-  resetTransactionPin(email: string, otp: string, newPin: string): Promise<string>;
-  updatePassword(userId: string, currentPassword: string, newPassword: string): Promise<string>;
-  updateTransactionPin(userId: string, currentPin: string, newPin: string): Promise<string>;
-  logout(res:Response): Promise<void>;
+  verifyEmailOTP(email: string, otp: string): Promise<boolean>;
+  // loginUser(phoneNumber: string, password: string): Promise<User>;
+  // createTransactionPin(pin: string): Promise<{ userWallet: string }>;
+  // forgotPassword(email: string): Promise<string>;
+  // forgotTransactionPin(email: string): Promise<string>;
+  // resetPassword(email: string, otp: string, newPassword: string): Promise<string>;
+  // resetTransactionPin(email: string, otp: string, newPin: string): Promise<string>;
+  // updatePassword(userId: string, currentPassword: string, newPassword: string): Promise<string>;
+  // updateTransactionPin(userId: string, currentPin: string, newPin: string): Promise<string>;
+  // logout(res:Response): Promise<void>;
 };
 
 export { userInterface, DecodedToken, UserSercviceInterface, VerificationInstance };
