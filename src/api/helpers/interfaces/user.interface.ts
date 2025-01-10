@@ -27,7 +27,7 @@ interface DecodedToken {
 interface UserSercviceInterface {
   registerUser(userData: Partial<userInterface>): Promise<{ user: User }>;
   verifyEmailOTP(email: string, otp: string): Promise<boolean>;
-  // loginUser(phoneNumber: string, password: string): Promise<User>;
+  loginUser(phoneNumber: string, password: string): Promise<User>;
   // createTransactionPin(pin: string): Promise<{ userWallet: string }>;
   // forgotPassword(email: string): Promise<string>;
   // forgotTransactionPin(email: string): Promise<string>;
