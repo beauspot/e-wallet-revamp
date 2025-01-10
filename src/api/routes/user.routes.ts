@@ -20,6 +20,8 @@ router.route("/register").post((req: Request, res: Response, next: NextFunction)
 
 router.route("/verify-otp").post((req: Request, res: Response, next: NextFunction) => user_controller.verifyOTP(req, res, next));
 
+router.route("/login").post((req: Request, res: Response, next: NextFunction) => user_controller.LoginUser(req, res, next));
+
 
 
 export default router
