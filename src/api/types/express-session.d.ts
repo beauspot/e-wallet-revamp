@@ -9,6 +9,14 @@ declare module "express-session" {
                 flw_ref?: string;
             };
         };
+        userId?: string;
+        firstName?: string;
+        lastName?: string;
+        middleName?: string;
+        email?: string;
+        phoneNumber?: string
+        isLoggedIn?: boolean;
+        role?: string;
         [key: string]: any; 
     }
 }
