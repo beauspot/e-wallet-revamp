@@ -40,4 +40,6 @@ export class UserController {
             new AppError(`${error.message}`, "failed", false, StatusCodes.INTERNAL_SERVER_ERROR);
         }
     }
+
+    async LoginUser(){}
 }
