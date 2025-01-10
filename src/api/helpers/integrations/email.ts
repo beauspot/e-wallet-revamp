@@ -8,7 +8,8 @@ import { resetPassword } from '@/templates/resetPassword';
 import { resetTransactionPin } from "@/templates/resetTransactionPin";
 import { welcomeEmail } from '@/templates/welcomeEmail';
 
-const resend = new Resend(process.env.RESEND_API_KEY!);
+// this throws as error.
+// const resend = new Resend(process.env.RESEND_API_KEY!)
 
 const TEMPLATES = {
     resetPassword: {
@@ -45,15 +46,15 @@ const TEMPLATES = {
     log.info('job send email', job);
     log.info('options', options);
     try {
-        const dispatch = await resend.emails.send({
-            from: options.from,
-            to: data.to,
-            subject: options.subject,
-            html: options.template(data),
-        });
+        // const dispatch = await resend.emails.send({
+        //     from: options.from,
+        //     to: data.to,
+        //     subject: options.subject,
+        //     html: options.template(data),
+        // });
 
         log.info(`Resend api successfully delivered ${type} email to ${data.to}`);
-        return dispatch;
+        // return dispatch;
     } catch (error) {
         log.error(`Resend api failed to deliver ${type} email to ${data.to}` + error);
     }
