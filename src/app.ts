@@ -61,8 +61,9 @@ function createAppServer(): Express {
             store: redisStore,
             cookie: {
                 maxAge: 30 * 60 * 1000, // 30mins
-                secure: process.env.NODE_ENV === "production", // only secure cookies in production
+                secure: process.env.NODE_ENV === "production",
                 httpOnly: true,
+                sameSite: "strict"
             }
         })
     );
