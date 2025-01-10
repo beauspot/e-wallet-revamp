@@ -170,7 +170,23 @@ export class UserService implements UserSercviceInterface {
         }
     }
 
-    async LoginUser(email: string, phoneNumber: string, password: string) {
-        
+    async loginUser(identifier: string, password: string) {
+        if (!identifier || !password) throw new AppError("Provide phone or email and password!", "failed", false);
+        try {
+            const user = await AppDataSource.getRepository(this.userEntity).findOne({
+                where: [
+                    { email: identifier },
+                    { phoneNumber: identifier },
+    
+            ], select: ['id', "password"] });
+
+            if (!user || !(await this.verifyPassword(password, user.password)))
+                throw new AppError("Incorrect email/phone number or password", "failed", false);
+
+            return user;
+        } catch (error: any) {
+            // logging.error(`Error in user: ${error.message}`);
+            throw new AppError("login failed", `${error.message}`, false);
+        }
     }
 }
