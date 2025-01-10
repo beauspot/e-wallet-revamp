@@ -37,9 +37,43 @@ export class UserController {
             else throw new AppError("Invalid or expired OTP", "failed", false, StatusCodes.BAD_REQUEST);
 
         } catch (error:any) {
-            new AppError(`${error.message}`, "failed", false, StatusCodes.INTERNAL_SERVER_ERROR);
+            new AppError(`Internal Server Error`, `${error.message}`, false, StatusCodes.INTERNAL_SERVER_ERROR);
         }
     }
 
-    async LoginUser(){}
+    async LoginUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+        const { phoneNumber, email, password } = req.body;
+
+
+        if ((!phoneNumber && !email) || !password)
+            throw new AppError("Identifier (email or phone) and password are required!", "failed", false);
+
+        try {
+            const identifier = phoneNumber || email;
+            const user = await this.userService.loginUser(identifier, password);
+
+            if (!req.session) {
+                throw new AppError("Session is not available", "failed", false, StatusCodes.INTERNAL_SERVER_ERROR);
+            }
+
+            req.session.userId = user.id;
+            req.session.isLoggedIn = true
+
+            res.status(StatusCodes.OK).json({
+                message: "Login Successful",
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    firstName: user.firstName,
+                    middleName: user.middleName,
+                    lastName: user.lastName,
+                    role: user.role
+                }
+            });
+
+            return;
+        } catch (error: any) {
+            throw new AppError(`Internal Server Error`, `${error.message}`, false, StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
