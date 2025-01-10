@@ -169,4 +169,8 @@ export class UserService implements UserSercviceInterface {
             throw new AppError("Error verifying OTP", error.message, false);
         }
     }
+
+    async LoginUser(email: string, phoneNumber: string, password: string) {
+        
+    }
 }
