@@ -1,4 +1,4 @@
-import { Response } from "express"
+import { Express } from "express";
 import { User } from "@/db/user.entity";
 import { UserWallet } from "@/db/wallet.entity";
 import { gender_enum, userRole } from "@/enum/user.enum";
@@ -35,7 +35,7 @@ interface UserSercviceInterface {
   // resetTransactionPin(email: string, otp: string, newPin: string): Promise<string>;
   // updatePassword(userId: string, currentPassword: string, newPassword: string): Promise<string>;
   // updateTransactionPin(userId: string, currentPin: string, newPin: string): Promise<string>;
-  // logout(res:Response): Promise<void>;
+  logout(session:Express.Session): Promise<void>;
 };
 
 export { userInterface, DecodedToken, UserSercviceInterface, VerificationInstance };
