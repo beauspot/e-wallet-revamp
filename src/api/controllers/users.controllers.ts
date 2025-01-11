@@ -37,7 +37,8 @@ export class UserController {
             else throw new AppError("Invalid or expired OTP", "failed", false, StatusCodes.BAD_REQUEST);
 
         } catch (error:any) {
-            new AppError(`Internal Server Error`, `${error.message}`, false, StatusCodes.INTERNAL_SERVER_ERROR);
+            next(error);
+            throw new AppError(`Internal Server Error`, `${error.message}`, false, StatusCodes.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -73,6 +74,22 @@ export class UserController {
 
             return;
         } catch (error: any) {
+            next(error);
+            throw new AppError(`Internal Server Error`, `${error.message}`, false, StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async LogoutUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            if (!req.session) throw new AppError("No active session found", "failed", false, StatusCodes.BAD_REQUEST);
+
+            await this.userService.logout(req.session);
+
+            res.status(StatusCodes.OK).json({
+                message: "Successfully logged out"
+            })
+        } catch (error: any) {
+            next(error);
             throw new AppError(`Internal Server Error`, `${error.message}`, false, StatusCodes.INTERNAL_SERVER_ERROR);
         }
     }
