@@ -32,6 +32,7 @@ const jestConfig: JestConfigWithTsJest = {
     "^@/integrations/(.*)$": ["<rootDir>/src/api/helpers/integrations/$1"],
     "^@/types/(.*)$": ["<rootDir>/src/api/types/$1"],
     "^@/queues/(.*)$": ["<rootDir>/src/api/helpers/queues/$1"],
+    "^@/templates/(.*)$": ["<rootDir>/src/api/helpers/templates/$1"],
     "^@/(.*)$": ["<rootDir>/src/$1"],
   },
   setupFilesAfterEnv: ["<rootDir>/src/__tests__/setup-redis.ts", "<rootDir>/src/__tests__/setupdb.ts"],
