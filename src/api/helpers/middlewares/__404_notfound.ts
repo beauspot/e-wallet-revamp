@@ -1,15 +1,19 @@
 import { Request, Response, NextFunction } from "express";
-// import log from "@/utils/logging";
+import { StatusCodes } from "http-status-codes";
 
 const routeNotFound = (req: Request, res: Response, next: NextFunction) => {
-  const error = new Error("Endpoint Not found");
-  log.warn(error);
+  const errorMessage = `Cannot find ${req.originalUrl} on this server!`;
+  log.warn(`WARN: ${errorMessage}`);
 
-  return res.status(404).json({
+
+  res.status(StatusCodes.NOT_FOUND).json({
     error: {
-      message: error.message,
+      message: errorMessage,
+      status: "fail",
+      statusCode: StatusCodes.NOT_FOUND
     },
   });
+
 };
 
 export default routeNotFound;
