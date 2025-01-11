@@ -1,17 +1,32 @@
 import { Request, Response, NextFunction } from "express";
+import { StatusCodes } from "http-status-codes";
 import AppError from "@/api/helpers/utils/appErrors";
 
-const errorHandlerMiddleware = (
-  err: Error,
+const globalErrorHandler = (
+  err: AppError,
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  log.error(err);
-  if (err instanceof AppError)
-    return res.status(err.statusCode!).json({ msg: err.message });
+  // set default values for missing Error Properties
+  const statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
+  const status = err.status || "error" || "Error";
 
-  next();
+  // Check if it's an operational erroror a programming error
+  if (err.isOperational) {
+    res.status(statusCode).json({
+      status,
+      message: err.message
+    });
+  } else {
+    log.error("ERROR 💥:", err);
+
+    // Send a Generic message for unknown errors
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      status: "Error",
+      message: err.message
+    })
+  }
 };
 
-export default errorHandlerMiddleware;
+export default globalErrorHandler;
