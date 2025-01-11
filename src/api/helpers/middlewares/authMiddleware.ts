@@ -1,7 +1,5 @@
-import jwt from "jsonwebtoken";
-import { promisify } from "util";
 import ExpressAsync from "express-async-handler";
-import { Request, Response, NextFunction } from "express";
+import {  Response, NextFunction } from "express";
 
 import { User } from "@/db/user.entity";
 import AppError from "@/utils/appErrors";
