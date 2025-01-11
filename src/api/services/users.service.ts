@@ -2,7 +2,7 @@ import { promisify } from "util";
 import * as bcrypt from "bcryptjs";
 import crypto from "crypto"
 import { Service } from "typedi";
-import { Response } from "express";
+import { Express } from "express";
 
 import AppError from "@/utils/appErrors";
 import MailClient from "@/integrations/email"
@@ -188,5 +188,14 @@ export class UserService implements UserSercviceInterface {
             // logging.error(`Error in user: ${error.message}`);
             throw new AppError("login failed", `${error.message}`, false);
         }
+    }
+
+    async logout(session: Express.Session): Promise<void> {
+        return new Promise((resolve, reject) => { 
+            session.destroy((error: any) => {
+                if (error) return reject(new AppError("Failed to destroy session."));
+                resolve()
+            })
+        })
     }
 }
