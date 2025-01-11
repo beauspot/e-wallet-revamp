@@ -105,6 +105,7 @@ SendMailWorker.on("error", (err) => {
 
 export default {
     addMailToQueue,
-    // mailWorker,
-    workerOptions
+    SendMailWorker,
+    workerOptions,
+    mailQueueEvents
 }
