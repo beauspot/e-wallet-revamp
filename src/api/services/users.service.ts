@@ -1,11 +1,8 @@
-import { promisify } from "util";
 import * as bcrypt from "bcryptjs";
 import crypto from "crypto"
 import { Service } from "typedi";
-import { Express } from "express";
 
 import AppError from "@/utils/appErrors";
-import MailClient from "@/integrations/email"
 import redisModule from "@/configs/redis.config";
 import { AppDataSource } from "@/configs/db.config";
 import { EmailJobData } from "@/interfaces/email.interface";
@@ -22,7 +19,6 @@ import emailQueues from "@/queues/email.queues";
 const { redisClient } = redisModule;
 const { addMailToQueue } = emailQueues;
 
-const { TEMPLATES } = MailClient;
 
 @Service()
 export class UserService implements UserSercviceInterface {
