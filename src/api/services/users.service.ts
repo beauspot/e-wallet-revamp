@@ -22,7 +22,7 @@ const { addMailToQueue } = emailQueues;
 
 @Service()
 export class UserService implements UserSercviceInterface {
-    constructor(private userEntity: typeof User, private userWalletEntity: typeof UserWallet) { }
+    constructor(private userEntity: typeof User) { }
 
     IV_LENGTH = 16;
 
@@ -135,9 +135,9 @@ export class UserService implements UserSercviceInterface {
             };
 
             const mailingQueue = await addMailToQueue(emailJobData);
-            log.info(mailingQueue);
+            // log.info(mailingQueue);
 
-            log.info(savedWallet);
+            // log.info(savedWallet);
 
             return { user: savedUser, wallet: savedWallet };
         } catch (error: any) {
