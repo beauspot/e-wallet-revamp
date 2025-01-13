@@ -138,11 +138,9 @@ export class User {
   @Column({ default: 0 })
   transactionResetAttempts: number;
 
-
   async compareTransactionPin(pin: string): Promise<boolean> {
     return bcrypt.compare(pin, this.transaction_pin);
   }
-
 
   async comparePassword(candidatePassword: string): Promise<boolean> {
     return bcrypt.compare(candidatePassword, this.password);
