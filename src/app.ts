@@ -13,7 +13,7 @@ import __404_err_page from "@/middlewares/__404_notfound";
 import globalErrorHandler from "@/middlewares/errHandler";
 import { logging_middleware } from "@/middlewares/loggingmiddleware";
 import authRouter from "@/routes/user.routes";
-// import walletRouter from "@/routes/wallet.routes";
+import walletRouter from "@/routes/wallet.routes";
 
 // Redis
 const { redisStore } = redisModule;
@@ -81,6 +81,7 @@ function createAppServer(): Express {
     });
 
     app.use("/auth", authRouter);
+    app.use("/wallet", walletRouter);
 
     app.all("*", __404_err_page);
 
