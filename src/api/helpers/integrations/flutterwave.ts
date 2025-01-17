@@ -19,7 +19,7 @@ import {
 export class Flw {
     constructor(private flutterWave: typeof Flutterwave, private publicKey: string = process.env.FLUTTERWAVE_PUBLIC_KEY!,
         private secretKey: string = process.env.FLUTTERWAVE_SECRET_KEY!,
-        private userTransactionModel: typeof UserTransactionModel) {
+        private userTransactionModel?: typeof UserTransactionModel) {
         this.flutterWave = new Flutterwave(this.publicKey, this.secretKey)
     }
 
@@ -98,14 +98,14 @@ export class Flw {
 
                 // TODO: anywhere you see "Transaction", change to "UserTransactionModel"
                 // TODO: setting the TransactioType properly for the updateData.
-                await AppDataSource.getRepository(this.userTransactionModel).update(query, updateData);
+                await AppDataSource.getRepository(this.userTransactionModel!).update(query, updateData);
                 return transaction;
             }
 
             updateData.status = TransactionStatus.Failed || TransactionStatus.Flagged;
 
             // TODO: setting the TransactioType properly for the updateData.
-            await AppDataSource.getRepository(this.userTransactionModel).update({ gatewayReference: response.data.flw_ref }, updateData);
+            await AppDataSource.getRepository(this.userTransactionModel!).update({ gatewayReference: response.data.flw_ref }, updateData);
 
             return response;
         } catch (error: any) {
