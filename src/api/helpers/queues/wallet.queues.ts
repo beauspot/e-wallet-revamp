@@ -1,4 +1,3 @@
-import crypto from "crypto";
 import { Worker, Queue, Job, QueueEvents, ConnectionOptions } from "bullmq";
 
 import { User } from "@/db/user.entity";
@@ -12,6 +11,8 @@ import { virtualAccountPayload as VANPayload } from "@/interfaces/flutterwave.in
 
 const { redisClient } = redisModule;
 const connection: ConnectionOptions = redisClient;
+const flutterwaveInstance = new Flw(process.env.FLUTTERWAVE_PUBLIC_KEY, process.env.FLUTTERWAVE_SECRET_KEY)
+
 
 // create the virtual account number queue
 const CreateVirtualAccountQueue = new Queue<VANPayload>("FLW-queues", {
@@ -43,26 +44,56 @@ const addVANToQueue = async (vanpayload: VANPayload): Promise<void> => {
 };
 
 const createVirtualAccountWorker = new Worker<VANPayload>('FLW-queues', async (job: Job<VANPayload>) => {
-    const { userId } = job.data;
+    const { userId, email, bvn, tx_ref, account_no, accountName } = job.data;
 
     try {
+        // call flutterwave SDK to create a virtual account
+        const virtualAccountResponse = await flutterwaveInstance.createVAN({
+            email,
+            bvn,
+            tx_ref,
+            is_permanent: true,
+            firstName: job.data.firstName,
+            lastName: job.data.lastName,
+            bankName: job.data.bankName,
+            phoneNumber: job.data.phoneNumber,
+            account_no,
+            accountName,
+        });
+
+        const { account_number, account_name } = virtualAccountResponse;
+
         const walletRepository = AppDataSource.getRepository(UserWallet);
         const userRepository = AppDataSource.getRepository(User);
 
         // Fetch the customer 
-        const user = await userRepository.findOne({ where: { id: userId } });
-        if (!user) throw new AppError(`User with ID ${userId} not found.`)
+        const user = await userRepository.findOne({
+            where: { id: userId },
+            relations: ['wallet']
+        });
+        if (!user) throw new AppError(`User with ID ${userId} or wallet not found.`);
+
+        user.wallet.virtualAccountNumber = account_no;
+        user.wallet.virtualAccountName = accountName;
         
         // create & save the user's wallet;
-        const newWallet = walletRepository.create({
-            balance: 0,
-            user,
-        });
+        // const newWallet = walletRepository.create({
+        //     balance: 0,
+        //     user,
+        // });
 
-        const saveWallet = await walletRepository.save(newWallet);
+        // console.log(`Wallet created: ${JSON.stringify(newWallet, null, 2)}`);
+        
+        
+        // const saveWallet = await walletRepository.save(newWallet);
+        const saveWallet = await walletRepository.save(user.wallet);
+        
+        log.info(`Wallet created: ${JSON.stringify(saveWallet, null, 2)}`);
+        
 
-        log.info(`Virtual account successfully created for User ID ${userId}. Wallet ID: ${saveWallet.id}`);
-        return saveWallet;
+        log.info(`Virtual account successfully created for User ID ${userId}. with account number: ${account_number}`);
+        // return saveWallet;
+        return virtualAccountResponse;
     } catch (error: any) {
         throw new AppError(`Error processing Job ${job.id}: ${error.message}`)
     }
