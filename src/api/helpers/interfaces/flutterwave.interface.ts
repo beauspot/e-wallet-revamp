@@ -54,9 +54,12 @@ interface virtualAccountPayload {
     is_permanent: true;
     firstName?: string;
     lastName?: string;
+    bankName: string;
     phoneNumber?: string;
     narration?: string;
     userId?: string;
+    account_no: string,
+    accountName: string
 }
 
 
