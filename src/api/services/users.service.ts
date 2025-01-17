@@ -108,10 +108,13 @@ export class UserService implements UserSercviceInterface {
             const vanPayload: VANPayload = {
                 firstName: savedUser.firstName,
                 lastName: savedUser.lastName,
-                email: savedUser.email,
+                accountName: savedUser.accountName,
+                account_no: savedUser.account_no,
+                bankName: "Flutterwave",
                 phoneNumber: savedUser.phoneNumber,
                 bvn: savedUser.bvn,
                 is_permanent: true,
+                email: savedUser.email,
             };
             
             const savedWallet = await WalletQueue.addVANToQueue(vanPayload);
