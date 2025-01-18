@@ -37,7 +37,7 @@ interface TransferPayload {
 interface SubAccounts {
     id?: string;  
     account_bank: string;
-    account_number: string;
+    account_no: string;
     business_name: string;  
     business_email: string;
     business_contact: string;  
@@ -50,16 +50,16 @@ interface SubAccounts {
 interface virtualAccountPayload {
     email: string;
     bvn: string;
-    tx_ref?: string;
-    is_permanent: true;
-    firstName?: string;
-    lastName?: string;
-    bankName: string;
-    phoneNumber?: string;
-    narration?: string;
+    tx_ref: string;
+    is_permanent: boolean;
+    firstName: string;
+    lastName: string;
+    bank_name?: string;
+    phoneNumber: string;
+    narration: string;
     userId?: string;
-    account_no: string,
-    accountName: string
+    // account_no: string,
+    // accountName: string
 }
 
 
