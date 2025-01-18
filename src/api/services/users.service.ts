@@ -63,7 +63,6 @@ export class UserService implements UserSercviceInterface {
     }
 
 
-
     private decryptData(encryptedText: string): string {
         if (!process.env.ENCRYPTION_KEY || process.env.ENCRYPTION_KEY.length !== 64) {
             throw new AppError("Invalid ENCRYPTION_KEY: Key must be a 64-character hexadecimal string");
@@ -108,16 +107,18 @@ export class UserService implements UserSercviceInterface {
             const vanPayload: VANPayload = {
                 firstName: savedUser.firstName,
                 lastName: savedUser.lastName,
-                accountName: savedUser.accountName,
-                account_no: savedUser.account_no,
-                bankName: "Flutterwave",
+                // accountName: savedUser.accountName,
+                // account_no: savedUser.account_no,
+                bank_name: savedUser.bank_name,
                 phoneNumber: savedUser.phoneNumber,
                 bvn: savedUser.bvn,
                 is_permanent: true,
                 email: savedUser.email,
+                narration: savedUser.narration,
+                tx_ref: savedUser.tx_ref,
             };
             
-            const savedWallet = await WalletQueue.addVANToQueue(vanPayload);
+            const savedWallet = await WalletQueue.addVANToQueue(savedUser.id);
 
             // Generate OTP and hash it
             const OTP_EXPIRY_SECONDS = 300;
