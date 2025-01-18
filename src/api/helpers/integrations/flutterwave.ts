@@ -167,13 +167,14 @@ export class Flw {
         try {
             const response = await this.flutterWave.VirtualAccount.create({
                 email: payload.email,
-                bvn: payload.bvn,
                 tx_ref: payload.tx_ref,
-                is_permanent: payload.is_permanent ?? true,
+                bvn: payload.bvn,
                 firstName: payload.firstName,
                 lastName: payload.lastName,
                 phoneNumber: payload.phoneNumber,
-                narration: payload.narration
+                narration: payload.narration,
+                is_permanent:  true,
+                bank_name: payload.bank_name,
             });
             logging.info(`Virtual account Payload: ${response}`);
             return response;
