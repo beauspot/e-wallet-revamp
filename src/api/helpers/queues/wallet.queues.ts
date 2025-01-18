@@ -2,7 +2,6 @@ import { Worker, Queue, Job, QueueEvents, ConnectionOptions } from "bullmq";
 
 import { User } from "@/db/user.entity";
 import { UserWallet } from "@/db/wallet.entity";
-import { UserTransactionModel } from "@/db/transactions.entity";
 import redisModule from "@/configs/redis.config";
 import { Flw } from "@/integrations/flutterwave";
 import AppError from "@/utils/appErrors";
@@ -11,11 +10,10 @@ import { virtualAccountPayload as VANPayload } from "@/interfaces/flutterwave.in
 
 const { redisClient } = redisModule;
 const connection: ConnectionOptions = redisClient;
-const flutterwaveInstance = new Flw(process.env.FLUTTERWAVE_PUBLIC_KEY, process.env.FLUTTERWAVE_SECRET_KEY)
-
+const flutterwaveInstance = new Flw(process.env.FLUTTERWAVE_PUBLIC_KEY, process.env.FLUTTERWAVE_SECRET_KEY);
 
 // create the virtual account number queue
-const CreateVirtualAccountQueue = new Queue<VANPayload>("FLW-queues", {
+const CreateVirtualAccountQueue = new Queue<VANPayload>("walletQueues", {
     connection,
     defaultJobOptions: {
         attempts: 5,
@@ -31,70 +29,78 @@ const CreateVirtualAccountQueue = new Queue<VANPayload>("FLW-queues", {
 * @param vanpayload - VANPayload containing virtual account details
 */
 
-const addVANToQueue = async (vanpayload: VANPayload): Promise<void> => {
-    try {
-        await CreateVirtualAccountQueue.add("FLW-queues", vanpayload, {
-            priority: 2, // Priority level for the job
-        });
-        log.info(`VAN job added to the queue: ${vanpayload.firstName}`);
-    } catch (error: any) {
-        log.error('Error adding email job:', error);
-        throw new AppError('Error adding email job:', error.messsage);
-    }
+const addVANToQueue = async (userId: string): Promise<void> => {
+
+    const userRepo = AppDataSource.getRepository(User);
+    const user = await userRepo.findOneBy({ id: userId });
+
+    if (!user) throw new AppError(`User ${userId} does not exist`);
+
+    const payload: VANPayload = {
+        email: user.email,
+        bvn: user.bvn,
+        bank_name: user.bank_name,
+        tx_ref: `tx_$x${Date.now()}`,
+        is_permanent: true,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phoneNumber: user.phoneNumber,
+        narration: `Virtual account for ${user.firstName} ${user.lastName}`
+    };
+
+    await CreateVirtualAccountQueue.add("createWallet", { userId, ...payload})
 };
 
-const createVirtualAccountWorker = new Worker<VANPayload>('FLW-queues', async (job: Job<VANPayload>) => {
-    const { userId, email, bvn, tx_ref, account_no, accountName } = job.data;
+const walletWorker = new Worker<VANPayload>("walletQueues",
+    async (job: Job<VANPayload>) => {
+        const {userId, ...payload} = job.data;
 
     try {
         // call flutterwave SDK to create a virtual account
-        const virtualAccountResponse = await flutterwaveInstance.createVAN({
-            email,
-            bvn,
-            tx_ref,
-            is_permanent: true,
-            firstName: job.data.firstName,
-            lastName: job.data.lastName,
-            bankName: job.data.bankName,
-            phoneNumber: job.data.phoneNumber,
-            account_no,
-            accountName,
-        });
+        // log.info(`Payload for creating VAN: ${JSON.stringify(payload, null, 2)}`);
 
-        const { account_number, account_name } = virtualAccountResponse;
+        const virtualAccountResponse = await flutterwaveInstance.createVAN(payload);
 
-        const walletRepository = AppDataSource.getRepository(UserWallet);
+        if (!virtualAccountResponse)
+            throw new AppError("Failed to create a virtual account: Response is undefined");
+        
+
+        if (!virtualAccountResponse || typeof virtualAccountResponse !== "object") 
+            throw new AppError("Invalid response from Flutterwave API: No data returned");
+        
+
+        if (virtualAccountResponse.status !== 'success') 
+            throw new AppError(`Failed to create virtual account: ${virtualAccountResponse.message}, virtual account Status: ${virtualAccountResponse.status}`);
+
+        // Save Wallet details in the db
         const userRepository = AppDataSource.getRepository(User);
+        const walletRepository = AppDataSource.getRepository(UserWallet);
+
+        log.info(`Wallet created: ${JSON.stringify(virtualAccountResponse, null, 2)}`);
+        // const { account_no: virtualAccountNo, account_name } = virtualAccountResponse;
 
         // Fetch the customer 
-        const user = await userRepository.findOne({
-            where: { id: userId },
-            relations: ['wallet']
-        });
-        if (!user) throw new AppError(`User with ID ${userId} or wallet not found.`);
+        const user = await userRepository.findOneBy({ id: userId});
+        if (!user) throw new AppError(`User or wallet not found.`);
 
-        user.wallet.virtualAccountNumber = account_no;
-        user.wallet.virtualAccountName = accountName;
-        
-        // create & save the user's wallet;
-        // const newWallet = walletRepository.create({
-        //     balance: 0,
-        //     user,
-        // });
+        const wallet = new UserWallet();
+        wallet.user = user;
+        wallet.virtualAccountNumber = virtualAccountResponse.virtualAccountNumber;
+        wallet.virtualAccountName = virtualAccountResponse.virtualAccountName;
+        wallet.bankName = virtualAccountResponse.bankName;
+        wallet.txReference = virtualAccountResponse.tx_ref;
 
-        // console.log(`Wallet created: ${JSON.stringify(newWallet, null, 2)}`);
+        await walletRepository.save(wallet);
+        log.info("Wallet created and linked to user:", userId);
         
-        
-        // const saveWallet = await walletRepository.save(newWallet);
-        const saveWallet = await walletRepository.save(user.wallet);
-        
-        log.info(`Wallet created: ${JSON.stringify(saveWallet, null, 2)}`);
+        log.info(`Wallet created: ${JSON.stringify(wallet, null, 2)}`);
         
 
-        log.info(`Virtual account successfully created for User ID ${userId}. with account number: ${account_number}`);
-        // return saveWallet;
+        log.info(`Virtual account successfully created for User ID . with account number: ${wallet.virtualAccountNumber}`);
+
         return virtualAccountResponse;
     } catch (error: any) {
+        log.error(error)
         throw new AppError(`Error processing Job ${job.id}: ${error.message}`)
     }
 }, {
@@ -112,7 +118,7 @@ const createVirtualAccountWorker = new Worker<VANPayload>('FLW-queues', async (j
         count: 1000, // save up to 1000 jobs
     },
     removeOnFail: {
-        age: 24 * 3600, // Keep failed jobs up to 24hrs
+        age: 24 * 3600, // Keep failed jobs up to 24hr
     },
 });
 
@@ -124,9 +130,9 @@ const createVirtualAccountWorker = new Worker<VANPayload>('FLW-queues', async (j
 // const processVANJob = 
 
 // listening to completed or failed jobs by attaching listeners to the workers
-createVirtualAccountWorker.on("completed", (job) => log.info(`Job ${job.id} has been completed successfully`));
+walletWorker.on("completed", (job) => log.info(`Job ${job.id} has been completed successfully`));
 
-createVirtualAccountWorker.on("failed", (job, err) => log.error(`Job ${job?.id} failed with error: ${err.message}`))
+walletWorker.on("failed", (job, err) => log.error(`Job ${job?.id} failed with error: ${err.message}`))
 
 const vanQueueEvents = new QueueEvents("FLW-queues", {
     connection
@@ -140,21 +146,20 @@ vanQueueEvents.on("failed", (jobId, failedReson) => {
     log.error(`Job failed: ${jobId}, Reason: ${failedReson}`);
 });
 
-
-createVirtualAccountWorker.on("ready", () => {
+walletWorker.on("ready", () => {
     log.info("Worker is ready and connected to Bull/Redis.");
 });
 
-createVirtualAccountWorker.on("stalled", (jobId) => {
+walletWorker.on("stalled", (jobId) => {
     log.warn(`Job ${jobId} has stalled and will be retried.`);
 });
 
-createVirtualAccountWorker.on("error", (err) => {
+walletWorker.on("error", (err) => {
     log.error(`Worker encountered an error: ${err.message}`);
 });
 
 export default {
     addVANToQueue,
-    createVirtualAccountWorker,
+    walletWorker,
     vanQueueEvents
 }
