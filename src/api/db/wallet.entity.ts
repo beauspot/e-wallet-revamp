@@ -21,17 +21,27 @@ export class UserWallet extends BaseEntity {
   @Column({ type: 'float', default: 0.0 }) // Explicitly define the type
   balance: number;
 
+  @Column({ type: "varchar", nullable: false })
+  firstName: string;
+
+
+  @Column({ type: "varchar", nullable: false })
+  lastName: string;
+
   @Column({nullable: false, unique: true, type: 'varchar'})
   virtualAccountNumber: string;
 
   @Column({ nullable: false, type: 'varchar' })
   virtualAccountName: string;
 
-  @Column({ nullable: false })
+  @Column({ nullable: true, type: 'varchar' })
   bankName: string;
 
   @Column({ nullable: false })
   txReference: string;
+
+  @Column({nullable: false, type: 'varchar'})
+  narration: string;
 
   @OneToOne(() => User, (user) => user.wallet, {
     onDelete: "CASCADE",
