@@ -39,7 +39,6 @@ const addVANToQueue = async (userId: string): Promise<void> => {
     const payload: VANPayload = {
         email: user.email,
         bvn: user.bvn,
-        bank_name: user.bank_name,
         tx_ref: `tx_$x${Date.now()}`,
         is_permanent: true,
         firstName: user.firstName,
