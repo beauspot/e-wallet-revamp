@@ -7,7 +7,7 @@ import AppError from "@/utils/appErrors";
 import { UserWallet } from "@/db/wallet.entity";
 import { AppDataSource } from "@/configs/db.config";
 import { generateReference } from "@/utils/generateRef";
-import { Flw } from "@/api/helpers/integrations/flutterwave";
+import { FlutterwaveService as Flw } from "@/api/helpers/integrations/flutterwave";
 import { UserTransactionModel } from "@/db/transactions.entity";
 import { WalletServiceInterface, SessionData } from "@/interfaces/wallet.interface";
 import { TransactionType, TransactionStatus, PaymentType } from "@/enum/transactions.enum"

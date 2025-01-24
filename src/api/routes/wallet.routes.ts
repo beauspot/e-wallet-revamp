@@ -7,11 +7,11 @@ import { UserWallet } from "@/db/wallet.entity";
 import { protect } from "@/middlewares/authMiddleware";
 import { WalletService } from "@/services/wallet.service";
 import { validate } from "@/helpers/middlewares/validate";
-import { Flw } from "@/api/helpers/integrations/flutterwave";
+import { FlutterwaveService as Flw } from "@/api/helpers/integrations/flutterwave";
 import { UserTransactionModel } from "@/db/transactions.entity";
 
 
-const FLW = new Flw(typeof Flutterwave, process.env.FLUTTERWAVE_PUBLIC_KEY!, process.env.FLUTTERWAVE_SECRET_KEY!, UserTransactionModel);
+const FLW = new Flw(process.env.FLUTTERWAVE_PUBLIC_KEY!, process.env.FLUTTERWAVE_SECRET_KEY!, UserTransactionModel);
 
 const walletService = new WalletService(UserWallet, FLW, UserTransactionModel, User);
 const walletController = new WalletController(walletService);
