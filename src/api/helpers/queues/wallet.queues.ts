@@ -3,14 +3,14 @@ import { Worker, Queue, Job, QueueEvents, ConnectionOptions } from "bullmq";
 import { User } from "@/db/user.entity";
 import { UserWallet } from "@/db/wallet.entity";
 import redisModule from "@/configs/redis.config";
-import { Flw } from "@/integrations/flutterwave";
+import { FlutterwaveService} from "@/integrations/flutterwave";
 import AppError from "@/utils/appErrors";
 import { AppDataSource } from "@/configs/db.config";
 import { virtualAccountPayload as VANPayload } from "@/interfaces/flutterwave.interface";
 
 const { redisClient } = redisModule;
 const connection: ConnectionOptions = redisClient;
-const flutterwaveInstance = new Flw(process.env.FLUTTERWAVE_PUBLIC_KEY, process.env.FLUTTERWAVE_SECRET_KEY);
+const flutterwaveInstance = new FlutterwaveService(process.env.FLUTTERWAVE_PUBLIC_KEY, process.env.FLUTTERWAVE_SECRET_KEY);
 
 // create the virtual account number queue
 const CreateVirtualAccountQueue = new Queue<VANPayload>("walletQueues", {
@@ -58,18 +58,18 @@ const walletWorker = new Worker<VANPayload>("walletQueues",
         // call flutterwave SDK to create a virtual account
         // log.info(`Payload for creating VAN: ${JSON.stringify(payload, null, 2)}`);
 
-        const virtualAccountResponse = await flutterwaveInstance.createVAN(payload);
+        const virtualAccountResponse = await flutterwaveInstance.createVirtualAccount(payload);
 
-        if (!virtualAccountResponse)
-            throw new AppError("Failed to create a virtual account: Response is undefined");
-        
+        if (!virtualAccountResponse) 
+            throw new AppError(
+                `Failed to create a virtual account: Empty response from Flutterwave`
+            );
 
         if (!virtualAccountResponse || typeof virtualAccountResponse !== "object") 
             throw new AppError("Invalid response from Flutterwave API: No data returned");
-        
 
-        if (virtualAccountResponse.status !== 'success') 
-            throw new AppError(`Failed to create virtual account: ${virtualAccountResponse.message}, virtual account Status: ${virtualAccountResponse.status}`);
+        const { account_number: virtualAccountNumber, account_name: virtualAccountName, bank_name: bankName } =
+            virtualAccountResponse;
 
         // Save Wallet details in the db
         const userRepository = AppDataSource.getRepository(User);
@@ -80,14 +80,13 @@ const walletWorker = new Worker<VANPayload>("walletQueues",
 
         // Fetch the customer 
         const user = await userRepository.findOneBy({ id: userId});
-        if (!user) throw new AppError(`User or wallet not found.`);
+        if (!user) throw new AppError(`User not found for ID: ${userId}`, "404", false);
 
         const wallet = new UserWallet();
         wallet.user = user;
-        wallet.virtualAccountNumber = virtualAccountResponse.virtualAccountNumber;
-        wallet.virtualAccountName = virtualAccountResponse.virtualAccountName;
-        wallet.bankName = virtualAccountResponse.bankName;
-        wallet.txReference = virtualAccountResponse.tx_ref;
+        wallet.virtualAccountNumber = virtualAccountNumber;
+        wallet.virtualAccountName = virtualAccountName;
+        wallet.bankName = bankName;
 
         await walletRepository.save(wallet);
         log.info("Wallet created and linked to user:", userId);
@@ -97,7 +96,7 @@ const walletWorker = new Worker<VANPayload>("walletQueues",
 
         log.info(`Virtual account successfully created for User ID . with account number: ${wallet.virtualAccountNumber}`);
 
-        return virtualAccountResponse;
+        // return virtualAccountResponse;
     } catch (error: any) {
         log.error(error)
         throw new AppError(`Error processing Job ${job.id}: ${error.message}`)
