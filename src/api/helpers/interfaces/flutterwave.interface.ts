@@ -62,7 +62,6 @@ interface virtualAccountPayload {
     // accountName: string
 }
 
-
 interface AccountInfoPayload {
     account_number: string;
     account_bank: string;
