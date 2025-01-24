@@ -24,7 +24,6 @@ export class UserWallet extends BaseEntity {
   @Column({ type: "varchar", nullable: false })
   firstName: string;
 
-
   @Column({ type: "varchar", nullable: false })
   lastName: string;
 
