@@ -17,6 +17,15 @@ interface userInterface {
   date_of_birth: Date;
 }
 
+interface userWalletPayloadInterface {
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  bvn: string;
+  is_permanent: boolean;
+  email: string;
+}
+
 
 interface UserSercviceInterface {
   registerUser(userData: Partial<userInterface>): Promise<{ user: User }>;
@@ -31,4 +40,4 @@ interface UserSercviceInterface {
   // updateTransactionPin(userId: string, currentPin: string, newPin: string): Promise<string>;
 };
 
-export { userInterface, UserSercviceInterface, VerificationInstance };
+export { userInterface, UserSercviceInterface, VerificationInstance, userWalletPayloadInterface };
