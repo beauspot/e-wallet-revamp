@@ -59,27 +59,27 @@ export class User {
 
   @Column({ type: "enum", enum: userRole, default: userRole.Customer, nullable: false })
   role: userRole;
-
-  @Column({ type: "varchar", unique: true, nullable: true })
-  account_no: string;
-
-  @Column({ type: "varchar", nullable: true })
-  accountName: string;
-
+  
+  // @Column({ type: "varchar", nullable: true })
+  // accountName: string;
+  
   @Column({ type: "text", nullable: true })
   address: string;
-
+  
   @Column({ type: "timestamp", nullable: true })
   passwordChangedAt: Date;
-
+  
   @Column({ type: "varchar", nullable: true })
   passwordResetToken: string;
-
+  
   @Column({ type: "timestamp", nullable: true })
   passwordResetExpires: Date;
-
+  
   @Column({ type: "int", default: 0 })
   passwordResetAttempts: number;
+  
+  @Column({ type: "varchar", unique: true, nullable: true })
+  account_no: string;
 
   @OneToOne(() => SettlementAcct, (settlementAcct) => settlementAcct.userAcct, {
     cascade: true,
@@ -87,7 +87,7 @@ export class User {
   })
   @JoinColumn()
   settlementAcct: SettlementAcct;
-
+  
   @OneToOne(() => UserWallet, (wallet) => wallet.user, {
     cascade: true,
     onDelete: "CASCADE"
@@ -101,15 +101,15 @@ export class User {
   })
   transactions: UserTransactionModel[];
 
-  @BeforeInsert()
-  generateAccountName() {
-    this.accountName = `${this.firstName} ${this.middleName} ${this.lastName}`
-    }
+  // @BeforeInsert()
+  // generateAccountName() {
+  //   this.accountName = `${this.firstName} ${this.middleName} ${this.lastName}`
+  // }
 
-  @BeforeInsert()
-  generateAccountID() {
-    this.account_no = this.phoneNumber;
-  }
+  // @BeforeInsert()
+  // generateAccountID() {
+  //   this.account_no = this.phoneNumber;
+  // }
 
   @BeforeInsert()
   async generateId() {
@@ -152,6 +152,14 @@ export class User {
       const saltRounds = 12;
       this.transaction_pin = await bcrypt.hash(this.transaction_pin, saltRounds);
     }
+  }
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  syncAccountNoWithWallet() {
+    if (this.wallet)
+      this.account_no = this.wallet.virtualAccountNumber;
+
   }
 
   createPasswordResetToken(): string {
