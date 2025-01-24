@@ -9,6 +9,7 @@ import {
   OneToMany,
   JoinColumn,
   BaseEntity,
+  BeforeUpdate
 } from "typeorm";
 import { UserTransactionModel } from "@/db/transactions.entity";
 import { User } from "@/db/user.entity";
@@ -56,6 +57,40 @@ export class UserWallet extends BaseEntity {
   generateId() {
     this.id = uuidv4();
   }
+
+  @BeforeInsert()
+  setUserDetails() {
+    if (this.user) {
+      this.firstName = this.user.firstName;
+      this.lastName = this.user.lastName;
+      this.virtualAccountName = `${this.user.firstName} ${this.user.lastName}`;
+      if (this.user.account_no) {
+        this.virtualAccountNumber = this.user.account_no;
+      } else {
+        this.virtualAccountNumber = this.user.phoneNumber;
+      }
+      if (this.user.address) {
+        this.narration = `Narration: ${this.user.firstName} ${this.user.lastName} - ${this.user.address}`;
+      } else {
+        this.narration = `Narration: ${this.user.firstName} ${this.user.lastName}`;
+      }
+    }
+  }
+  
+  @BeforeInsert()
+  @BeforeUpdate()
+  syncVirtualAccountNumberWithUser() {
+    if (this.user) {
+      this.virtualAccountNumber = this.user.account_no;
+    }
+  }
+
+  // @BeforeInsert()
+  // generateDefaultVirtualAccountNumber() {
+  //   if (!this.virtualAccountNumber) {
+  //     this.virtualAccountNumber = this.user?.phoneNumber || uuidv4(); // Default to phone number or generate one
+  //   }
+  // }
 
   @CreateDateColumn()
   createdAt: Date;
