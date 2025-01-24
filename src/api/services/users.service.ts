@@ -6,7 +6,7 @@ import AppError from "@/utils/appErrors";
 import redisModule from "@/configs/redis.config";
 import { AppDataSource } from "@/configs/db.config";
 import { EmailJobData } from "@/interfaces/email.interface";
-import { userInterface, UserSercviceInterface } from "@/interfaces/user.interface";
+import { userInterface, UserSercviceInterface, userWalletPayloadInterface } from "@/interfaces/user.interface";
 import { virtualAccountPayload as VANPayload } from "@/interfaces/flutterwave.interface";
 
 import { User } from "@/db/user.entity";
@@ -104,18 +104,13 @@ export class UserService implements UserSercviceInterface {
 
             
             // Add the VAN creation job to the queue
-            const vanPayload: VANPayload = {
+            const vanPayload: userWalletPayloadInterface = {
                 firstName: savedUser.firstName,
                 lastName: savedUser.lastName,
-                // accountName: savedUser.accountName,
-                // account_no: savedUser.account_no,
-                bank_name: savedUser.bank_name,
                 phoneNumber: savedUser.phoneNumber,
                 bvn: savedUser.bvn,
                 is_permanent: true,
                 email: savedUser.email,
-                narration: savedUser.narration,
-                tx_ref: savedUser.tx_ref,
             };
             
             const savedWallet = await WalletQueue.addVANToQueue(savedUser.id);
