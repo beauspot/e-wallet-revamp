@@ -1,10 +1,10 @@
 import Flutterwave from "flutterwave-node-v3";
-import { StatusCodes } from "http-status-codes"
+import { StatusCodes } from "http-status-codes";
 
 import logging from "@/utils/logging";
 import AppError from "@/utils/appErrors";
 import { AppDataSource } from "@/configs/db.config";
-import { TransactionStatus, TransactionType, PaymentType } from "@/enum/transactions.enum"
+import { TransactionStatus, TransactionType, PaymentType } from "@/enum/transactions.enum";
 import { UserTransactionModel } from "@/db/transactions.entity";
 import {
     CardChargePayload,
@@ -15,56 +15,57 @@ import {
     AccountInfoPayload,
 } from "@/interfaces/flutterwave.interface";
 
+export class FlutterwaveService {
+    private flutterWave: typeof Flutterwave;
 
-export class Flw {
-    constructor(private flutterWave: typeof Flutterwave, private publicKey: string = process.env.FLUTTERWAVE_PUBLIC_KEY!,
+    constructor(
+        private publicKey: string = process.env.FLUTTERWAVE_PUBLIC_KEY!,
         private secretKey: string = process.env.FLUTTERWAVE_SECRET_KEY!,
-        private userTransactionModel?: typeof UserTransactionModel) {
-        this.flutterWave = new Flutterwave(this.publicKey, this.secretKey)
+        private userTransactionModel: typeof UserTransactionModel = UserTransactionModel
+    ) {
+        this.flutterWave = new Flutterwave(this.publicKey, this.secretKey);
     }
 
-    chargeCard = async (payload: CardChargePayload) => {
+    async chargeCard(payload: CardChargePayload) {
         try {
             const response = await this.flutterWave.Charge.card(payload);
-            let reCallCharge;
 
-            if (response.status == "error") {
-                throw new Error(response.message);
+            if (response.status === "error") {
+                throw new AppError(response.message, "400", false);
             }
 
-            // Authorizing transactions
             if (response.meta.authorization.mode === "pin") {
-                let chargePayload = {
+                const chargePayload = {
                     ...payload,
                     authorization: {
                         mode: "pin",
                         fields: ["pin"],
                         pin: payload.pin!,
-                    }
+                    },
                 };
-                reCallCharge = await this.flutterWave.Charge.card(chargePayload);
-            };
-            return reCallCharge;
+                return await this.flutterWave.Charge.card(chargePayload);
+            }
+
+            return response;
         } catch (error: any) {
+            logging.error("Error charging card", error.message);
             throw new AppError(error.message, "400", false);
         }
-    };
+    }
 
-    authorizeCardPayment = async (payload: AuthorizeCardPaymentPayload) => {
-        // Add the OTP to authorize the transaction
-        let transaction;
-        let updateData = {
+    async authorizeCardPayment(payload: AuthorizeCardPaymentPayload) {
+        const updateData = {
             reference: "",
             gatewayReference: "",
-            transactionType: TransactionType.Debit || TransactionType.Credit,
+            transactionType: TransactionType.Debit,
             amount: 0,
             currency: "₦",
             receipient: "",
-            status: TransactionStatus.Pending || TransactionStatus.Successful || TransactionStatus.Failed || TransactionStatus.Flagged,
-            paymentType: PaymentType.Card || PaymentType.Account,
+            status: TransactionStatus.Pending,
+            paymentType: PaymentType.Card,
             description: "",
             deviceFingerprint: "",
-            user: { id: payload.userId }, // use a partial entity object for `user` because of Typeorm
+            user: { id: payload.userId },
         };
 
         try {
@@ -77,93 +78,78 @@ export class Flw {
 
             updateData.reference = response.data.tx_ref;
             updateData.gatewayReference = response.data.flw_ref;
-            updateData.paymentType = response.data.payment_type as PaymentType;
             updateData.transactionType = response.data.transaction_type as TransactionType;
             updateData.amount = Number(response.data.amount);
             updateData.status = response.data.status as TransactionStatus;
             updateData.description = response.data.narration;
             updateData.deviceFingerprint = response.data.device_fingerprint;
             updateData.currency = response.data.currency;
-            updateData.user = response.payload.userId;
 
-            if (
-                response.data.status === "successful" ||
-                response.data.status === "pending"
-            ) {
-                // Verify the payment
-                const transactionId = response.data.id;
-                transaction = await this.flutterWave.Transaction.verify({ id: transactionId });
+            const query = { gatewayReference: response.data.flw_ref };
 
-                const query = { gatewayReference: transaction.data.flw_ref };
-
-                // TODO: anywhere you see "Transaction", change to "UserTransactionModel"
-                // TODO: setting the TransactioType properly for the updateData.
-                await AppDataSource.getRepository(this.userTransactionModel!).update(query, updateData);
+            if (response.data.status === "successful" || response.data.status === "pending") {
+                const transaction = await this.flutterWave.Transaction.verify({ id: response.data.id });
+                await AppDataSource.getRepository(this.userTransactionModel).update(query, updateData);
                 return transaction;
             }
 
-            updateData.status = TransactionStatus.Failed || TransactionStatus.Flagged;
-
-            // TODO: setting the TransactioType properly for the updateData.
-            await AppDataSource.getRepository(this.userTransactionModel!).update({ gatewayReference: response.data.flw_ref }, updateData);
+            updateData.status = TransactionStatus.Failed;
+            await AppDataSource.getRepository(this.userTransactionModel).update(query, updateData);
 
             return response;
         } catch (error: any) {
             logging.error("Error authorizing card payment", error.message);
             throw new AppError(error.message, "400", false);
         }
-    };
+    }
 
-    verifyAccount = async (payload: AccountInfoPayload) => {
+    async verifyAccount(payload: AccountInfoPayload) {
         try {
-            const res = await this.flutterWave.Misc.verify_Account(payload);
+            const response = await this.flutterWave.Misc.verify_Account(payload);
 
-            if (res.status !== "success") throw new AppError(`${res.message}`, "fetching account details failed", false);
+            if (response.status !== "success") {
+                throw new AppError(response.message, "Account verification failed", false, StatusCodes.BAD_REQUEST);
+            }
 
-            // acct details: acct name, acct number
-            return res.data
+            return response.data;
         } catch (error: any) {
-            if (error.message && error.message.includes("Account verification failed"))
-                throw new AppError("Invalid account number or bank code", "Bank account is invalid or doesn't exist", false, StatusCodes.NOT_FOUND);
-
-            throw new AppError(error.message || "Failed to verify account", "account verification failed", false, StatusCodes.INTERNAL_SERVER_ERROR)
+            logging.error("Error verifying account", error.message);
+            throw new AppError(error.message, "500", false);
         }
     }
 
-    // Creating virtual accounts which would be mapped to your custom account identifier
-
-    /*****  Transfers  *****/
-    transfer = async (payload: TransferPayload) => {
-        // transfer directly to another customer using myWallet
+    async transfer(payload: TransferPayload) {
         try {
-            const response = await this.flutterWave.Transfer.initiate(payload);
-
-            return response;
+            return await this.flutterWave.Transfer.initiate(payload);
         } catch (error: any) {
+            logging.error("Error initiating transfer", error.message);
             throw new AppError(error.message, "400", false);
         }
-    };
+    }
 
-    /*****  subaccount creation  *****/
-    createSubaccount = async (payload: SubAccounts) => {
+    async createSubaccount(payload: SubAccounts) {
         try {
             const response = await this.flutterWave.Subaccount.create(payload);
             logging.info(response);
+            return response;
         } catch (error: any) {
-            logging.error(error);
+            logging.error("Error creating subaccount", error.message);
+            throw new AppError(error.message, "400", false);
         }
-    };
-    fetchSubaccount = async (payload: SubAccounts) => {
+    }
+
+    async fetchSubaccount(payload: SubAccounts) {
         try {
             const response = await this.flutterWave.Subaccount.fetch(payload);
             logging.info(response);
+            return response;
         } catch (error: any) {
-            logging.error(error);
+            logging.error("Error fetching subaccount", error.message);
+            throw new AppError(error.message, "400", false);
         }
-    };
+    }
 
-    // Virtual account creation.
-    createVAN = async (payload: virtualAccountPayload) => {
+    async createVirtualAccount(payload: virtualAccountPayload) {
         try {
             const response = await this.flutterWave.VirtualAccount.create({
                 email: payload.email,
@@ -173,13 +159,18 @@ export class Flw {
                 lastName: payload.lastName,
                 phoneNumber: payload.phoneNumber,
                 narration: payload.narration,
-                is_permanent:  true,
-                bank_name: payload.bank_name,
+                is_permanent: true,
             });
-            logging.info(`Virtual account Payload: ${response}`);
-            return response;
+
+            if (response.status !== "success") {
+                throw new AppError(`Failed to create virtual account: ${response.message}`, "400", false);
+            }
+
+            logging.info(`Virtual Account Created: ${JSON.stringify(response.data, null, 2)}`);
+            return response.data;
         } catch (error: any) {
-            logging.error(error.message);
+            logging.error("Error creating virtual account", error.message);
+            throw new AppError(error.message, "500", false);
         }
     }
 }
