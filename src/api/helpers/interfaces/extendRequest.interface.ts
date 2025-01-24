@@ -4,7 +4,10 @@ import { Request, Response } from "express";
 import { User } from "@/db/user.entity";
 
 export interface ExtendRequest extends Request {
+<<<<<<< HEAD
     body: any,
+=======
+>>>>>>> parent of 987b9a9 (do not run)
     user?: {
         id?: string;
         email?: string;

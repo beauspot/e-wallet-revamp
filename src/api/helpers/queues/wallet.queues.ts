@@ -12,8 +12,6 @@ const { redisClient } = redisModule;
 const connection: ConnectionOptions = redisClient;
 const flutterwaveInstance = new Flw(process.env.FLUTTERWAVE_PUBLIC_KEY, process.env.FLUTTERWAVE_SECRET_KEY);
 
-
-
 // create the virtual account number queue
 const CreateVirtualAccountQueue = new Queue<VANPayload>("walletQueues", {
     connection,
