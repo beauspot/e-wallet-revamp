@@ -60,15 +60,6 @@ export class User {
   @Column({ type: "enum", enum: userRole, default: userRole.Customer, nullable: false })
   role: userRole;
 
-  @Column({ nullable: true }) 
-  bank_name: string;
-
-  @Column({ nullable: true, type: 'varchar' })
-  narration: string;
-
-  @Column({ nullable: true, type: 'varchar' })
-  tx_ref: string;
-
   @Column({ type: "varchar", unique: true, nullable: true })
   account_no: string;
 
