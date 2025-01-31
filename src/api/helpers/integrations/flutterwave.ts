@@ -155,9 +155,9 @@ export class FlutterwaveService {
                 email: payload.email,
                 tx_ref: payload.tx_ref,
                 bvn: payload.bvn,
-                firstName: payload.firstName,
-                lastName: payload.lastName,
-                phoneNumber: payload.phoneNumber,
+                // firstname: payload.firstname,
+                // lastname: payload.lastname,
+                // phonenumber: payload.phonenumber,
                 narration: payload.narration,
                 is_permanent: true,
             });
