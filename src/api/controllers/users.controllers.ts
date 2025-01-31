@@ -65,9 +65,9 @@ export class UserController {
                 user: {
                     id: user.id,
                     email: user.email,
-                    firstName: user.firstName,
-                    middleName: user.middleName,
-                    lastName: user.lastName,
+                    firstName: user.firstname,
+                    middleName: user.middlename,
+                    lastName: user.lastname,
                     role: user.role
                 }
             });
