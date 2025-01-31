@@ -89,30 +89,15 @@ export class UserService implements UserSercviceInterface {
 
             const hashedPassword = await this.hashPassword(userData.password);
 
-            const encryptBVN = this.encryptData(userData.bvn!);
-            const encryptNIN = this.encryptData(userData.nin!);
-
             const userRepository = AppDataSource.getRepository(this.userEntity).create({
                 ...userData,
-                // nin: encryptNIN,
-                // bvn: encryptBVN,
                 password: hashedPassword,
             });
 
             const savedUser = await AppDataSource.getRepository(this.userEntity).save(userRepository);
             // log.info(savedUser);
 
-            
             // Add the VAN creation job to the queue
-            const vanPayload: userWalletPayloadInterface = {
-                firstName: savedUser.firstName,
-                lastName: savedUser.lastName,
-                phoneNumber: savedUser.phoneNumber,
-                bvn: savedUser.bvn,
-                is_permanent: true,
-                email: savedUser.email,
-            };
-            
             const savedWallet = await WalletQueue.addVANToQueue(savedUser.id);
 
             // Generate OTP and hash it
@@ -127,13 +112,13 @@ export class UserService implements UserSercviceInterface {
                 type: "welcomeEmail",
                 data: {
                     to: savedUser.email,
-                    firstName: savedUser.firstName,
+                    firstName: savedUser.firstname,
                     otp,
                     priority: "high"
                 }
             };
 
-            const mailingQueue = await addMailToQueue(emailJobData);
+            await addMailToQueue(emailJobData);
             // log.info(mailingQueue);
 
             // log.info(savedWallet);
@@ -171,7 +156,7 @@ export class UserService implements UserSercviceInterface {
             const user = await AppDataSource.getRepository(this.userEntity).findOne({
                 where: [
                     { email: identifier },
-                    { phoneNumber: identifier },
+                    { phonenumber: identifier },
     
             ], select: ['id', "password"] });
 
