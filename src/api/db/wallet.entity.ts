@@ -11,37 +11,56 @@ import {
   BaseEntity,
   BeforeUpdate
 } from "typeorm";
-import { UserTransactionModel } from "@/db/transactions.entity";
 import { User } from "@/db/user.entity";
+import { UserTransactionModel } from "@/db/transactions.entity"
+import { FlutterwaveVirtualAccountResponse } from "@/interfaces/flutterwave.interface";
 
 @Entity()
 export class UserWallet extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({ type: 'float', default: 0.0 }) // Explicitly define the type
+  @Column({ type: 'float', default: 0.0 })
   balance: number;
 
-  @Column({ type: "varchar", nullable: false })
-  firstName: string;
+  // @Column({ type: "varchar", nullable: false })
+  // firstname: string;
 
-  @Column({ type: "varchar", nullable: false })
-  lastName: string;
+  // @Column({ type: "varchar", nullable: false })
+  // lastname: string;
 
-  @Column({nullable: false, unique: true, type: 'varchar'})
-  virtualAccountNumber: string;
+  @Column({ nullable: true, unique: true, type: 'varchar' })
+  virtualAccountNumber: string; 
 
   @Column({ nullable: false, type: 'varchar' })
   virtualAccountName: string;
 
   @Column({ nullable: true, type: 'varchar' })
-  bankName: string;
+  bankName: string; 
 
-  @Column({ nullable: false })
-  txReference: string;
+  @Column({ nullable: false, type: 'varchar' })
+  txReference: string; 
 
-  @Column({nullable: false, type: 'varchar'})
-  narration: string;
+  @Column({ nullable: false, type: 'varchar' })
+  narration: string; 
+
+  @Column({ nullable: true, type: 'varchar' })
+  accountStatus: string; 
+
+  @Column({ nullable: true, type: 'varchar' })
+  responseCode: string; 
+
+  @Column({ nullable: true, type: 'varchar' })
+  responseMessage: string; 
+
+  @Column({ nullable: true, type: 'varchar' })
+  orderRef: string; 
+
+  @Column({ nullable: true, type: 'varchar' })
+  expiryDate: string; 
+
+  @Column({ nullable: true, type: 'varchar' })
+  amount: string;
 
   @OneToOne(() => User, (user) => user.wallet, {
     onDelete: "CASCADE",
@@ -51,7 +70,10 @@ export class UserWallet extends BaseEntity {
 
   @OneToMany(() => UserTransactionModel, (transaction) => transaction.user)
   @JoinColumn()
-  transactions: UserTransactionModel[];
+  transactions: UserTransactionModel[]
+
+  @CreateDateColumn()
+  createdAt: Date;
 
   @BeforeInsert()
   generateId() {
@@ -61,22 +83,22 @@ export class UserWallet extends BaseEntity {
   @BeforeInsert()
   setUserDetails() {
     if (this.user) {
-      this.firstName = this.user.firstName;
-      this.lastName = this.user.lastName;
-      this.virtualAccountName = `${this.user.firstName} ${this.user.lastName}`;
+      // this.firstname = this.user.firstname;
+      // this.lastname = this.user.lastname;
+      this.virtualAccountName = `${this.user.firstname} ${this.user.lastname}`;
       if (this.user.account_no) {
         this.virtualAccountNumber = this.user.account_no;
       } else {
-        this.virtualAccountNumber = this.user.phoneNumber;
+        this.virtualAccountNumber = this.user.phonenumber;
       }
       if (this.user.address) {
-        this.narration = `Narration: ${this.user.firstName} ${this.user.lastName} - ${this.user.address}`;
+        this.narration = `Narration: ${this.user.firstname} ${this.user.lastname} - ${this.user.address}`;
       } else {
-        this.narration = `Narration: ${this.user.firstName} ${this.user.lastName}`;
+        this.narration = `Narration: ${this.user.firstname} ${this.user.lastname}`;
       }
     }
   }
-  
+
   @BeforeInsert()
   @BeforeUpdate()
   syncVirtualAccountNumberWithUser() {
@@ -85,21 +107,18 @@ export class UserWallet extends BaseEntity {
     }
   }
 
-  // @BeforeInsert()
-  // generateDefaultVirtualAccountNumber() {
-  //   if (!this.virtualAccountNumber) {
-  //     this.virtualAccountNumber = this.user?.phoneNumber || uuidv4(); // Default to phone number or generate one
-  //   }
-  // }
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  // Method to update wallet with flutterwave virtual account details
-  updateVirtualAccountDetails(accountNumber: string, accountName: string, bankName: string, txRef: string) {
-    this.virtualAccountNumber = accountNumber;
-    this.virtualAccountName = accountName;
-    this.bankName = bankName;
-    this.txReference = txRef;
+  // Method to update wallet with Flutterwave virtual account details
+  updateVirtualAccountDetails(response: FlutterwaveVirtualAccountResponse) {
+    this.virtualAccountNumber = response.data.account_number;
+    this.virtualAccountName = `${this.user.firstname} ${this.user.lastname}`;
+    this.bankName = response.data.bank_name;
+    this.txReference = response.data.flw_ref;
+    this.accountStatus = response.data.account_status || 'active';
+    this.responseCode = response.data.response_code;
+    this.responseMessage = response.data.response_message;
+    this.orderRef = response.data.order_ref;
+    this.expiryDate = response.data.expiry_date;
+    this.amount = response.data.amount;
+    this.narration = response.data.note;
   }
 }
