@@ -31,9 +31,9 @@ export const protect = ExpressAsync(
         req.user = {
             id: currentUser?.id,
             email: currentUser?.email,
-            firstName: currentUser?.firstName,
-            lastName: currentUser?.lastName,
-            phoneNumber: currentUser?.phoneNumber
+            firstName: currentUser?.firstname,
+            lastName: currentUser?.lastname,
+            phoneNumber: currentUser?.phonenumber
         };
         res.locals.user = currentUser;
 
