@@ -52,10 +52,10 @@ interface virtualAccountPayload {
     bvn: string;
     tx_ref: string;
     is_permanent: boolean;
-    firstName: string;
-    lastName: string;
+    // firstname: string;
+    // lastname: string;
     bank_name?: string;
-    phoneNumber: string;
+    // phonenumber: string;
     narration: string;
     userId?: string;
     // account_no: string,
@@ -67,6 +67,31 @@ interface AccountInfoPayload {
     account_bank: string;
 }
 
+enum MessageStatusType {
+    Active = "active",
+    Success = "success",
+    Failed = "failed",
+}
+
+interface FlutterwaveVirtualAccountResponse {
+    status: string; 
+    message: MessageStatusType;
+    data: {
+        response_code: string; 
+        response_message: string; 
+        flw_ref: string;
+        order_ref: string;
+        account_number: string; 
+        account_status?: string; 
+        frequency: number; 
+        bank_name: string; 
+        created_at: string;
+        expiry_date: string; 
+        note: string; 
+        amount: string;
+    };
+}
+
 export {
     CardChargePayload,
     AuthorizeCardPaymentPayload,
@@ -74,4 +99,7 @@ export {
     SubAccounts,
     virtualAccountPayload,
     AccountInfoPayload,
+    FlutterwaveVirtualAccountResponse
 };
+
+
