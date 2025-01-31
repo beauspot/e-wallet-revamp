@@ -25,16 +25,16 @@ export class User {
   id: string;
 
   @Column({ type: "varchar", nullable: false })
-  firstName: string;
+  firstname: string;
 
   @Column({ type: "varchar", nullable: true })
-  middleName: string;
+  middlename: string;
 
   @Column({ type: "varchar", nullable: false })
-  lastName: string;
+  lastname: string;
 
   @Column({ type: "varchar", unique: true, nullable: false })
-  phoneNumber: string;
+  phonenumber: string;
 
   @Column({ type: "varchar", unique: true, nullable: false })
   email: string;
