@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import * as bcrypt from "bcryptjs";
+import Cryptojs from "crypto-js";
 import {
   Entity,
   Column,
@@ -48,10 +49,10 @@ export class User {
   @Column({ type: "varchar", length: 255, nullable: false })
   transaction_pin: string;
 
-  @Column({ type: "varchar", unique: true, length: 11, nullable: false })
+  @Column({ type: "varchar", unique: true, length: 255, nullable: false })
   nin: string;
 
-  @Column({ type: "varchar", unique: true, length: 11, nullable: false })
+  @Column({ type: "varchar", unique: true, length: 255, nullable: false })
   bvn: string;
 
   @Column({ type: "enum", enum: gender_enum, nullable: false })
@@ -156,6 +157,17 @@ export class User {
 
   @BeforeInsert()
   @BeforeUpdate()
+  encryptSensitiveData() {
+    if (this.bvn) this.bvn = this.encryptData(this.bvn);
+    if (this.nin) this.nin = this.encryptData(this.nin);
+  }
+  
+  // decryptSensitiveData() {
+  //   if(this.bvn) this.bvn = this.decryptData(this.bvn)
+  // }
+
+  @BeforeInsert()
+  @BeforeUpdate()
   syncAccountNoWithWallet() {
     if (this.wallet)
       this.account_no = this.wallet.virtualAccountNumber;
@@ -176,5 +188,14 @@ export class User {
       return JWTTimestamp < changedTimestamp;
     }
     return false;
+  }
+
+  encryptData = (data: string): string => {
+    return Cryptojs.AES.encrypt(data, process.env.ENCRYPTION_KEY!).toString();
+  }
+
+  decryptData = (encryptedData: string): string => {
+    const bytes = Cryptojs.AES.decrypt(encryptedData, process.env.ENCRYPTION_KEY!);
+    return bytes.toString(Cryptojs.enc.Utf8);
   }
 }

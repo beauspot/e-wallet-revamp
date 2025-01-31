@@ -1,4 +1,5 @@
 import axios from "axios";
+import Cryptojs from "crypto-js";
 import {stringify} from 'flatted';
 import Flutterwave from "flutterwave-node-v3";
 import { Worker, Queue, Job, QueueEvents, ConnectionOptions } from "bullmq";
@@ -41,9 +42,14 @@ const addVANToQueue = async (userId: string): Promise<void> => {
 
     if (!user) throw new AppError(`User ${userId} does not exist`);
 
+    const decryptData = (encryptedData: string): string => {
+        const bytes = Cryptojs.AES.decrypt(encryptedData, process.env.ENCRYPTION_KEY!);
+        return bytes.toString(Cryptojs.enc.Utf8);
+    }
+
     const payload: VANPayload = {
         email: user.email,
-        bvn: user.bvn,
+        bvn: decryptData(user.bvn),
         tx_ref: `tx_$x${Date.now()}`,
         is_permanent: true,
         // firstname: user.firstname,
@@ -60,7 +66,7 @@ const walletWorker = new Worker<VANPayload>("walletQueues",
         const { userId, ...payload } = job.data;
         
         
-    try {
+        try {
         // call flutterwave SDK to create a virtual account
         log.info(`Payload for creating VAN: ${JSON.stringify(payload, null, 2)}`);
         // const FLUTTERWAVE_API_URL = `https://api.flutterwave.com/v3/virtual-account-numbers`;
@@ -69,6 +75,8 @@ const walletWorker = new Worker<VANPayload>("walletQueues",
         //     Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY!}`,
         //     "Content-Type": "application/json",
         // };
+
+       
         
         log.info(`Wallet Payload: ${stringify(payload)}`);
         // log.info(`Processing job ${job.id} with payload: ${JSON.stringify(payload)}`);
