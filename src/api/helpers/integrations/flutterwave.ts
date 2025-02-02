@@ -2,7 +2,7 @@ import Flutterwave from "flutterwave-node-v3";
 import { StatusCodes } from "http-status-codes";
 
 import logging from "@/utils/logging";
-import AppError from "@/utils/appErrors";
+
 import { AppDataSource } from "@/configs/db.config";
 import { TransactionStatus, TransactionType, PaymentType } from "@/enum/transactions.enum";
 import { UserTransactionModel } from "@/db/transactions.entity";
