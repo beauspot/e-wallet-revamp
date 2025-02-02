@@ -1,4 +1,4 @@
-import axios from "axios";
+// import axios from "axios";
 import Cryptojs from "crypto-js";
 import {stringify} from 'flatted';
 import Flutterwave from "flutterwave-node-v3";
@@ -35,9 +35,12 @@ const CreateVirtualAccountQueue = new Queue<VANPayload>("walletQueues", {
 * @param vanpayload - VANPayload containing virtual account details
 */
 
+const userRepo = AppDataSource.getRepository(User);
+// const walletRepo = AppDataSource.getRepository(UserWallet);
+
 const addVANToQueue = async (userId: string): Promise<void> => {
 
-    const userRepo = AppDataSource.getRepository(User);
+    // const userRepo = AppDataSource.getRepository(User);
     const user = await userRepo.findOneBy({ id: userId });
 
     if (!user) throw new AppError(`User ${userId} does not exist`);
@@ -101,13 +104,12 @@ const walletWorker = new Worker<VANPayload>("walletQueues",
         }
 
         // Save Wallet details in the db
-        const userRepository = AppDataSource.getRepository(User);
         const walletRepository = AppDataSource.getRepository(UserWallet);
 
         //  log.info(`Wallet created: ${job.id!}: ${JSON.stringify(virtualAccountResponse, null, 2)}`);
 
         // Fetch the customer 
-        const user = await userRepository.findOneBy({ id: userId});
+        const user = await userRepo.findOneBy({ id: userId});
         if (!user) throw new AppError(`User not found for ID: ${userId}`, "404", false);
 
         const wallet = new UserWallet();
@@ -125,8 +127,11 @@ const walletWorker = new Worker<VANPayload>("walletQueues",
         wallet.narration = note;
 
         await walletRepository.save(wallet);
-        log.info("Wallet created and linked to user:", userId);
+        log.info("Wallet created and linked to user");
     
+        if (wallet.virtualAccountNumber = "null") 
+            log.info(`Virtual Account number is "null", as this is a development environment`)
+        else
         log.info(`Virtual account successfully created for User ID . with account number: ${wallet.virtualAccountNumber}`);
 
         return virtualAccountResponse.data;
