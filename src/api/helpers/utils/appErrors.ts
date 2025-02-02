@@ -1,4 +1,6 @@
-class AppError extends Error {
+import { AppErrorInterface } from "@/interfaces/appError.interface"
+
+class AppError extends Error implements AppErrorInterface {
   constructor(public message: string, public status?: string ,
     public isOperational?: boolean, public statusCode?: number) {
 
@@ -7,12 +9,20 @@ class AppError extends Error {
 
     // Set additional properties for the error
     this.statusCode = statusCode; // HTTP status code
+    
     this.status = `${statusCode}`.startsWith("4") ? "fail" : "error"; // Status string: "fail" for 4xx codes, "error" for others
+
     this.isOperational = true; // Indicates whether the error is operational (i.e. caused by user input) or a programming error
 
     // Capture the stack trace for debugging
     Error.captureStackTrace(this, this.constructor);
   }
-}
+};
+
+declare global {
+  var AppError: typeof AppError;
+};
+
+globalThis.AppError = AppError;
 
 export default AppError;
