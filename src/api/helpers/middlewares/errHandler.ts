@@ -12,7 +12,7 @@ const globalErrorHandler = (
   const statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
   const status = err.status || "error" || "Error";
 
-  // Check if it's an operational erroror a programming error
+  // Check if it's an operational error or a programming error
   if (err.isOperational) {
     res.status(statusCode).json({
       status,
