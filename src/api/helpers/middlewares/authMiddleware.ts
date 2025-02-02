@@ -1,5 +1,5 @@
 import ExpressAsync from "express-async-handler";
-import {  Response, NextFunction } from "express";
+import {  Response, NextFunction, RequestHandler } from "express";
 
 import { User } from "@/db/user.entity";
 import { AppDataSource } from "@/configs/db.config";
@@ -7,8 +7,8 @@ import { ExtendRequest } from "@/interfaces/extendRequest.interface";
 
 const UserRepository = AppDataSource.getRepository(User);
 
-export const protect = ExpressAsync(
-    async (req: ExtendRequest, res: Response, next: NextFunction) => {
+export const protect: RequestHandler = ExpressAsync(
+    async (req: ExtendRequest, res, next) => {
 
         // 1. check if the session exists & has a valid user ID
         if (!req.session || !req.session.userId) {
