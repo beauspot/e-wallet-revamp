@@ -7,7 +7,6 @@ import { Worker, Queue, Job, QueueEvents, ConnectionOptions } from "bullmq";
 import { User } from "@/db/user.entity";
 import { UserWallet } from "@/db/wallet.entity";
 import redisModule from "@/configs/redis.config";
-import AppError from "@/utils/appErrors";
 import { AppDataSource } from "@/configs/db.config";
 import {
     virtualAccountPayload as VANPayload,

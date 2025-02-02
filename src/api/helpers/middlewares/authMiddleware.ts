@@ -2,9 +2,8 @@ import ExpressAsync from "express-async-handler";
 import {  Response, NextFunction } from "express";
 
 import { User } from "@/db/user.entity";
-import AppError from "@/utils/appErrors";
 import { AppDataSource } from "@/configs/db.config";
-import { ExtendRequest, ExtendResponse } from "@/interfaces/extendRequest.interface";
+import { ExtendRequest } from "@/interfaces/extendRequest.interface";
 
 const UserRepository = AppDataSource.getRepository(User);
 
