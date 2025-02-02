@@ -18,8 +18,8 @@ if (process.env.NODE_ENV === "test") {
 
 log.info(`Current Environment: ${process.env.NODE_ENV} Environment`);
 
-const isDevelopment = process.env.NODE_ENV;
-const synchronize = isDevelopment ? true : false;
+const isDevelopment = process.env.NODE_ENV === "development";
+const synchronize = isDevelopment;
 
 const {
   DB_HOST,
@@ -49,8 +49,12 @@ export const AppDataSource = new DataSource({
     SettlementAcct,
     UserTransactionModel,
   ],
-  logging: false,
-  synchronize: synchronize
+  // logging: false,
+  logging: ["error", "warn", "schema"],
+  synchronize: synchronize,
+  ssl: process.env.NODE_ENV === "production" ? {
+    rejectUnauthorized: false
+  } : false
 });
 
 
