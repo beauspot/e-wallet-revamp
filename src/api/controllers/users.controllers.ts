@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import asynchandler from "express-async-handler"
 import { StatusCodes } from "http-status-codes";
-import AppError from "@/utils/appErrors";
 import { plainToInstance } from "class-transformer";
 import { ExtendRequest } from "@/interfaces/extendRequest.interface";
 

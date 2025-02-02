@@ -49,7 +49,7 @@ export class User {
   @Column({ type: "varchar", length: 255, nullable: false })
   transaction_pin: string;
 
-  @Column({ type: "varchar", unique: true, length: 255, nullable: false })
+  @Column({ type: "varchar", unique: true, length: 255, nullable: true })
   nin: string;
 
   @Column({ type: "varchar", unique: true, length: 255, nullable: false })

@@ -2,7 +2,6 @@ import * as bcrypt from "bcryptjs";
 import crypto from "crypto"
 import { Service } from "typedi";
 
-import AppError from "@/utils/appErrors";
 import redisModule from "@/configs/redis.config";
 import { AppDataSource } from "@/configs/db.config";
 import { EmailJobData } from "@/interfaces/email.interface";
