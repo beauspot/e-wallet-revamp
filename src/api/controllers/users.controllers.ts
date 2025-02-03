@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from "express";
-import asynchandler from "express-async-handler"
+import {  RequestHandler } from "express";
+import AsyncHandler from "express-async-handler";
 import { StatusCodes } from "http-status-codes";
 import { plainToInstance } from "class-transformer";
 import { ExtendRequest } from "@/interfaces/extendRequest.interface";
@@ -9,52 +9,37 @@ import { UserService } from '@/services/users.service';
 export class UserController {
     constructor(private userService: UserService) { }
     
-    async registerUser(req: Request, res: Response, next: NextFunction) {
-        try {
+    registerUser: RequestHandler = AsyncHandler(async (req, res, next) => {
+
             const { userData } = req.body;
             const result = await this.userService.registerUser(userData);
-            res.status(StatusCodes.CREATED).json(result);
-        } catch (error: any) {
-            console.error(error);
-            throw new AppError(`${error.message}`, "failed", false, StatusCodes.INTERNAL_SERVER_ERROR);
-        }
-    };
+        res.status(StatusCodes.CREATED).json({
+            status: "Success",
+            data: result
+        });
 
-    async verifyOTP(req: Request, res: Response, next: NextFunction) {
-        const { email, otp } = req.body; 
+    });
 
-        try {
-            // Call the service method to verify OTP
-            const isVerified = await this.userService.verifyEmailOTP(email, otp);
+    verifyOTP: RequestHandler = AsyncHandler(async (req, res, next) => {
 
-            // If OTP is valid, return a success response
-            if (isVerified) 
-                res.status(200).json({
-                    message: "OTP verified successfully",
-                    status: "success",
-                })
-            else throw new AppError("Invalid or expired OTP", "failed", false, StatusCodes.BAD_REQUEST);
+        const { email, otp } = req.body;
+        await this.userService.verifyEmailOTP(email, otp);
+        res.status(StatusCodes.OK).json({
+            status: 'success',
+            message: "OTP verified successfully"
+        });
 
-        } catch (error:any) {
-            next(error);
-            throw new AppError(`Internal Server Error`, `${error.message}`, false, StatusCodes.INTERNAL_SERVER_ERROR);
-        }
-    }
+    })
 
-    async LoginUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+    LoginUser: RequestHandler = AsyncHandler(async (req, res, next): Promise<void> => {
+
         const { phoneNumber, email, password } = req.body;
 
-
-        if ((!phoneNumber && !email) || !password)
-            throw new AppError("Identifier (email or phone) and password are required!", "failed", false);
-
-        try {
             const identifier = phoneNumber || email;
             const user = await this.userService.loginUser(identifier, password);
 
-            if (!req.session) {
+        if (!req.session) 
                 throw new AppError("Session is not available", "failed", false, StatusCodes.INTERNAL_SERVER_ERROR);
-            }
 
             req.session.userId = user.id;
             req.session.isLoggedIn = true
@@ -72,14 +57,10 @@ export class UserController {
             });
 
             return;
-        } catch (error: any) {
-            next(error);
-            throw new AppError(`Internal Server Error`, `${error.message}`, false, StatusCodes.INTERNAL_SERVER_ERROR);
-        }
-    }
+    })
 
-    async LogoutUser(req: Request, res: Response, next: NextFunction): Promise<void> {
-        try {
+    LogoutUser: RequestHandler = AsyncHandler(async (req, res, next): Promise<void> => {
+        
             if (!req.session) throw new AppError("No active session found", "failed", false, StatusCodes.BAD_REQUEST);
 
             await this.userService.logout(req.session);
@@ -87,9 +68,6 @@ export class UserController {
             res.status(StatusCodes.OK).json({
                 message: "Successfully logged out"
             })
-        } catch (error: any) {
-            next(error);
-            throw new AppError(`Internal Server Error`, `${error.message}`, false, StatusCodes.INTERNAL_SERVER_ERROR);
-        }
-    }
+        
+    })
 }

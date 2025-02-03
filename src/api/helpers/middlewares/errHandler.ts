@@ -1,8 +1,8 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, ErrorRequestHandler } from "express";
 import { StatusCodes } from "http-status-codes";
 import AppError from "@/api/helpers/utils/appErrors";
 
-const globalErrorHandler = (
+const globalErrorHandler: ErrorRequestHandler = (
   err: AppError,
   req: Request,
   res: Response,
