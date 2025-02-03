@@ -5,11 +5,9 @@ import { Service } from "typedi";
 import redisModule from "@/configs/redis.config";
 import { AppDataSource } from "@/configs/db.config";
 import { EmailJobData } from "@/interfaces/email.interface";
-import { userInterface, UserSercviceInterface, userWalletPayloadInterface } from "@/interfaces/user.interface";
-import { virtualAccountPayload as VANPayload } from "@/interfaces/flutterwave.interface";
+import { userInterface, UserSercviceInterface } from "@/interfaces/user.interface";
 
 import { User } from "@/db/user.entity";
-import { UserWallet } from "@/db/wallet.entity";
 
 // import Queues
 import WalletQueue from '@/queues/wallet.queues';
@@ -26,6 +24,7 @@ export class UserService implements UserSercviceInterface {
     IV_LENGTH = 16;
 
     private async hashPassword(password: string): Promise<string> {
+
         const saltRounds = 12;
         return bcrypt.hash(password, saltRounds);
     };
@@ -43,48 +42,9 @@ export class UserService implements UserSercviceInterface {
         return bcrypt.compare(inputOtp, hashedOtp);
     }
 
-    private encryptData(text: string): string {
-        if (!process.env.ENCRYPTION_KEY || process.env.ENCRYPTION_KEY.length !== 64) {
-            throw new AppError("Invalid ENCRYPTION_KEY: Key must be a 64-character hexadecimal string");
-        }
-
-        // Convert the hexadecimal ENCRYPTION_KEY to a 32-byte Buffer
-        const encryptionKey = Buffer.from(process.env.ENCRYPTION_KEY, 'hex');
-
-        // Generate a random Initialization Vector (IV)
-        const iv = crypto.randomBytes(this.IV_LENGTH);
-        const cipher = crypto.createCipheriv('aes-256-cbc', encryptionKey, iv);
-
-        let encrypted = cipher.update(text, 'utf8', 'hex');
-        encrypted += cipher.final('hex');
-
-        return iv.toString('hex') + ":" + encrypted;
-    }
-
-
-    private decryptData(encryptedText: string): string {
-        if (!process.env.ENCRYPTION_KEY || process.env.ENCRYPTION_KEY.length !== 64) {
-            throw new AppError("Invalid ENCRYPTION_KEY: Key must be a 64-character hexadecimal string");
-        }
-
-        // Convert the hexadecimal ENCRYPTION_KEY to a 32-byte Buffer
-        const encryptionKey = Buffer.from(process.env.ENCRYPTION_KEY, 'hex');
-
-        const parts = encryptedText.split(":");
-        const iv = Buffer.from(parts[0], 'hex');
-        const encryptedData = parts[1];
-
-        const decipher = crypto.createDecipheriv('aes-256-cbc', encryptionKey, iv);
-
-        let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
-        decrypted += decipher.final('utf8');
-
-        return decrypted;
-    };
-
     async registerUser(userData: Partial<userInterface>) {
-        try {
-            if (!userData.password) throw new AppError("Password Required");
+
+            if (!userData.password) throw new AppError("Password Required", "failed", false, 401);
 
             const hashedPassword = await this.hashPassword(userData.password);
 
@@ -97,7 +57,7 @@ export class UserService implements UserSercviceInterface {
             // log.info(savedUser);
 
             // Add the VAN creation job to the queue
-            const savedWallet = await WalletQueue.addVANToQueue(savedUser.id);
+        await WalletQueue.addVANToQueue(savedUser.id);
 
             // Generate OTP and hash it
             const OTP_EXPIRY_SECONDS = 300;
@@ -122,18 +82,15 @@ export class UserService implements UserSercviceInterface {
 
             // log.info(savedWallet);
 
-            return { user: savedUser, wallet: savedWallet };
-        } catch (error: any) {
-            log.error(`Error registering user: ${error.message}`);
-            throw new AppError("Error registering user", error.message, false);
-        }
+        return { user: savedUser };
+
     };
 
     async verifyEmailOTP(email: string, otp: string): Promise<boolean> {
-        try {
+
             const hashedOtp = await redisClient.get(`otp:${email}`);
 
-            if (!hashedOtp) throw new AppError("Invalid OTP or OTP expired");
+            if (!hashedOtp) throw new AppError("Invalid OTP or OTP expired", "failed", false, 400);
 
             const isMatch = await this.verifyOtpHash(otp, hashedOtp);
 
@@ -143,15 +100,13 @@ export class UserService implements UserSercviceInterface {
             await redisClient.expire(`otp:${email}`, 0);
 
             return true;
-        } catch (error: any) {
-            log.error(`Error verifying OTP: ${error.message}`);
-            throw new AppError("Error verifying OTP", error.message, false);
-        }
+
     }
 
     async loginUser(identifier: string, password: string) {
-        if (!identifier || !password) throw new AppError("Provide phone or email and password!", "failed", false);
-        try {
+
+        if (!identifier || !password) throw new AppError("Provide phone or email and password!", "failed", false, 400);
+
             const user = await AppDataSource.getRepository(this.userEntity).findOne({
                 where: [
                     { email: identifier },
@@ -160,19 +115,16 @@ export class UserService implements UserSercviceInterface {
             ], select: ['id', "password"] });
 
             if (!user || !(await this.verifyPassword(password, user.password)))
-                throw new AppError("Incorrect email/phone number or password", "failed", false);
+                throw new AppError("Incorrect email/phone number or password", "failed", false, 401);
 
             return user;
-        } catch (error: any) {
-            // logging.error(`Error in user: ${error.message}`);
-            throw new AppError("login failed", `${error.message}`, false);
-        }
+
     }
 
     async logout(session: Express.Session): Promise<void> {
         return new Promise((resolve, reject) => { 
             session.destroy((error: any) => {
-                if (error) return reject(new AppError("Failed to destroy session."));
+                if (error) return reject(new AppError("Logout Failed.", "failed", false, 500));
                 resolve()
             })
         })
