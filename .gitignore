@@ -9,3 +9,4 @@ jots.ts
 testQueues.ts
 todos.ts
 src/api/helpers/integrations/flutterwave.ts
+logs
