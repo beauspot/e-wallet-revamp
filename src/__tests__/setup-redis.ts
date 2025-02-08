@@ -3,7 +3,7 @@ import walletQueues from "@/queues/wallet.queues";
 import emailQueues from "@/queues/email.queues";
 
 const { redisClient, shutdownClient } = redisModule;
-const { createVirtualAccountWorker, vanQueueEvents } = walletQueues;
+const {  walletWorker, vanQueueEvents } = walletQueues;
 const { SendMailWorker, mailQueueEvents } = emailQueues;
 
 afterAll(async () => {
@@ -13,7 +13,7 @@ afterAll(async () => {
 
 afterAll(async () => {
     await Promise.all([
-        createVirtualAccountWorker.close(),
+        walletWorker.close(),
         vanQueueEvents.close(),
         SendMailWorker.close(),
         mailQueueEvents.close()

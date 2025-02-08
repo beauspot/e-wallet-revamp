@@ -17,7 +17,7 @@ import { User } from "@/db/user.entity";
 import { UserWallet } from "@/db/wallet.entity";
 import { TransactionStatus, TransactionType, PaymentType } from "@/enum/transactions.enum";
 
-@Entity()
+@Entity({name: "transactions"})
 export class UserTransactionModel extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;

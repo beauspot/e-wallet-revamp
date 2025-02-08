@@ -15,7 +15,7 @@ import { User } from "@/db/user.entity";
 import { UserTransactionModel } from "@/db/transactions.entity"
 import { FlutterwaveVirtualAccountResponse } from "@/interfaces/flutterwave.interface";
 
-@Entity()
+@Entity({ name: "virtualAccount"})
 export class UserWallet extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   id: string;
