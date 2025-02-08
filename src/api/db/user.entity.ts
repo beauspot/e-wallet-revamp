@@ -20,7 +20,7 @@ import { UserWallet } from "@/db/wallet.entity";
 import { SettlementAcct } from "@/db/settlementAccts.entity";
 import { UserTransactionModel } from "@/db/transactions.entity";
 
-@Entity()
+@Entity({name: "User"})
 export class User {
   @PrimaryGeneratedColumn("uuid")
   id: string;
