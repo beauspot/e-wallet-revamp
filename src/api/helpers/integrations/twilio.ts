@@ -11,11 +11,11 @@ const authToken = process.env.TWILIO_AUTH_TOKEN!;
 const serviceSid = process.env.TWILIO_SERVICE_SID!;
 
 export class TwilioConfig implements TwilioClassConfig {
-    constructor(public phoneNumber: string, protected otp: string) { }
+    constructor(public phoneumber: string, protected otp: string) { }
 
     async sendOtp(phoneNumber: string):Promise<VerificationInstance> {
         const existingUser = await AppDataSource.getRepository(User).findOne({
-            where: { phoneNumber }
+            where: { phonenumber: phoneNumber }
         });
 
         if (existingUser) {
