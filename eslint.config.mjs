@@ -10,7 +10,7 @@ export default [
   {
     rules: {
       "quotes": ["error", "double"],
-      eqeqeq: "error",
+      "eqeqeq": "error",
       "no-unused-vars": "error",
       "prefer-const": ["error", { ignoreReadBeforeAssign: true}],
       "reportUnusedInlineConfigs": "error",
