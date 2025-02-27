@@ -3,6 +3,7 @@ import ts from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
 import prettier from "eslint-plugin-prettier";
 import jest from "eslint-plugin-jest";
+import unicorn from "eslint-plugin-unicorn";
 
 export default [
   js.configs.recommended, // Base JS recommended rules
@@ -34,7 +35,8 @@ export default [
     plugins: {
       "@typescript-eslint": ts,
       prettier,
-      jest
+      jest,
+      unicorn
     },
     extends: [
       "plugin:@typescript-eslint/recommended", // TypeScript recommended rules
@@ -42,7 +44,8 @@ export default [
       "plugin:jest/recommended", // Jest recommended rules
       "airbnb-base",
       "airbnb-typescript/base",
-      "prettier"
+      "prettier",
+      "plugin:unicorn/recommended",
     ],
     rules: {
       "@typescript-eslint/no-unused-vars": "error",
