@@ -54,7 +54,8 @@ export const AppDataSource = new DataSource({
   synchronize: synchronize,
   ssl: process.env.NODE_ENV === "production" ? {
     rejectUnauthorized: false
-  } : false
+  } : false,
+  // migrations: 
 });
 
 
