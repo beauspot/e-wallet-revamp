@@ -20,9 +20,11 @@ class AppError extends Error implements AppErrorInterface {
 };
 
 declare global {
-  var AppError: typeof AppError;
-};
+  // @ts-ignore
+  var Apprror: typeof AppError;
+}
 
+// @ts-ignore
 globalThis.AppError = AppError;
 
 export default AppError;
