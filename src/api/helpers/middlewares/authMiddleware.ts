@@ -1,5 +1,5 @@
 import ExpressAsync from "express-async-handler";
-import {  Response, NextFunction, RequestHandler } from "express";
+import {  RequestHandler } from "express";
 
 import { User } from "@/db/user.entity";
 import { AppDataSource } from "@/configs/db.config";
@@ -13,7 +13,7 @@ export const protect: RequestHandler = ExpressAsync(
         // 1. check if the session exists & has a valid user ID
         if (!req.session || !req.session.userId) {
             return next(
-                new AppError("You are not logged in. Please loggin to access this resource.", "No active session", false, 401)
+                new AppError("You are not logged in. Please log-in to access this resource.", "No active session", false, 401)
             );
         }
 
@@ -24,7 +24,7 @@ export const protect: RequestHandler = ExpressAsync(
 
         // 3. Check if the user changed their password after the session was created
         if (currentUser?.changedPasswordAfter(req.session.createdAt))
-            return next(new AppError("User recently changed passwor! Please log in again.", "Password changed", false, 401));
+            return next(new AppError("User recently changed password! Please log in again.", "Password changed", false, 401));
 
         // 4. Attach the user object to the request for further use.
         req.user = {
