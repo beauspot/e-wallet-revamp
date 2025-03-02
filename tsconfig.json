@@ -53,6 +53,15 @@
       "module": "commonjs"
     }
   },
-  "include": ["src/**/*.ts", "src/api/types/**/*.d.ts", "src/__tests__/*", "/jest.setup.ts", "customRedis.config.ts"],
-  "exclude": ["node_modules", "package.json", "coverage"]
+  "include": [
+    "src/**/*.ts", 
+    "src/api/types/**/*.d.ts", 
+    "src/__tests__/*", 
+    "/jest.setup.ts", 
+    "customRedis.config.ts"],
+  "exclude": [
+    "node_modules", 
+    "package.json", 
+    "coverage"
+  ]
 }
