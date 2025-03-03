@@ -27,9 +27,9 @@ export class UserController {
   });
 
   LoginUser: RequestHandler = AsyncHandler(async (req, res): Promise<void> => {
-    const { phoneNumber, email, password } = req.body;
+    const { phonenumber, email, password } = req.body;
 
-    const identifier = phoneNumber || email;
+    const identifier = phonenumber || email;
     const user = await this.userService.loginUser(identifier, password);
 
     if (!req.session) {
