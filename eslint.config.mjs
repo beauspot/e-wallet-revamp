@@ -24,7 +24,10 @@ export default [
       parser: tseslint.parser,
       parserOptions: {
         project: "./tsconfig.eslint.json",
-        tsconfigRootDir: process.cwd()
+        tsconfigRootDir: process.cwd(),
+        ecmaFeatures: {
+          experimentalDecorators: true
+        }
       }
     }
   },
@@ -39,9 +42,12 @@ export default [
       sonarjs: sonarjs
     },
     rules: {
+      "@typescript-eslint/indent": "off",
+      "@typescript-eslint/no-invalid-this": "off",
+      "@typescript-eslint/explicit-member-accessibility": "off",
       "sonarjs/cognitive-complexity": "error",
       "sonarjs/no-identical-functions": "error",
-      "prettier/prettier": "error",
+      "prettier/prettier": ["error", { parser: "typescript" }],
       "@typescript-eslint/no-unused-vars": "error",
       "no-console": "warn",
       "no-restricted-syntax": "off",

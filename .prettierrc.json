@@ -1,4 +1,5 @@
 {
+  "parser": "typescript",
   "semi": true,
   "tabWidth": 2,
   "printWidth": 100,
@@ -6,13 +7,17 @@
   "trailingComma": "none",
   "bracketSpacing": true,
   "arrowParens": "avoid",
-  "importOrder": ["express",
-    "^(?!express)\\w+$", 
+  "importOrder": [
+    "^@core/(.*)$",
+    "express",
+    "^(?!express)\\w+$",
     "<THIRD_PARTY_MODULES>",
-    "^assets/(.*)$", 
-    "^@trivago", 
-    "^[./]"],
+    "^assets/(.*)$",
+    "^@server/(.*)$",
+    "^@trivago",
+    "^[./]"
+  ],
   "importOrderSeparation": true,
-  "importOrderSortSpecifiers": true,
+  "importOrderSortSpecifiers": false,
   "plugins": ["@trivago/prettier-plugin-sort-imports"]
 }
