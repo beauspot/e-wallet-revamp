@@ -1,4 +1,5 @@
 import express, { Express, Response } from "express";
+import "express-async-errors";
 import rateLimit from "express-rate-limit";
 // import swaggerUi from "swagger-ui-express";
 import session from "express-session";
