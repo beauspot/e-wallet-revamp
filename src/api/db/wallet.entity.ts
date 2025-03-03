@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 import {
   Entity,
   Column,
@@ -11,16 +10,18 @@ import {
   BaseEntity,
   BeforeUpdate
 } from "typeorm";
+import { v4 as uuidv4 } from "uuid";
+
+import { UserTransactionModel } from "@/db/transactions.entity";
 import { User } from "@/db/user.entity";
-import { UserTransactionModel } from "@/db/transactions.entity"
 import { FlutterwaveVirtualAccountResponse } from "@/interfaces/flutterwave.interface";
 
-@Entity({ name: "virtualAccount"})
+@Entity({ name: "virtualAccount" })
 export class UserWallet extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({ type: 'float', default: 0.0 })
+  @Column({ type: "float", default: 0.0 })
   balance: number;
 
   // @Column({ type: "varchar", nullable: false })
@@ -29,48 +30,48 @@ export class UserWallet extends BaseEntity {
   // @Column({ type: "varchar", nullable: false })
   // lastname: string;
 
-  @Column({ nullable: true, unique: true, type: 'varchar' })
-  virtualAccountNumber: string; 
+  @Column({ nullable: true, unique: true, type: "varchar" })
+  virtualAccountNumber: string;
 
-  @Column({ nullable: false, type: 'varchar' })
+  @Column({ nullable: false, type: "varchar" })
   virtualAccountName: string;
 
-  @Column({ nullable: true, type: 'varchar' })
-  bankName: string; 
+  @Column({ nullable: true, type: "varchar" })
+  bankName: string;
 
-  @Column({ nullable: false, type: 'varchar' })
-  txReference: string; 
+  @Column({ nullable: false, type: "varchar" })
+  txReference: string;
 
-  @Column({ nullable: false, type: 'varchar' })
-  narration: string; 
+  @Column({ nullable: false, type: "varchar" })
+  narration: string;
 
-  @Column({ nullable: true, type: 'varchar' })
-  accountStatus: string; 
+  @Column({ nullable: true, type: "varchar" })
+  accountStatus: string;
 
-  @Column({ nullable: true, type: 'varchar' })
-  responseCode: string; 
+  @Column({ nullable: true, type: "varchar" })
+  responseCode: string;
 
-  @Column({ nullable: true, type: 'varchar' })
-  responseMessage: string; 
+  @Column({ nullable: true, type: "varchar" })
+  responseMessage: string;
 
-  @Column({ nullable: true, type: 'varchar' })
-  orderRef: string; 
+  @Column({ nullable: true, type: "varchar" })
+  orderRef: string;
 
-  @Column({ nullable: true, type: 'varchar' })
-  expiryDate: string; 
+  @Column({ nullable: true, type: "varchar" })
+  expiryDate: string;
 
-  @Column({ nullable: true, type: 'varchar' })
+  @Column({ nullable: true, type: "varchar" })
   amount: string;
 
-  @OneToOne(() => User, (user) => user.wallet, {
-    onDelete: "CASCADE",
+  @OneToOne(() => User, user => user.wallet, {
+    onDelete: "CASCADE"
   })
   @JoinColumn()
   user: User;
 
-  @OneToMany(() => UserTransactionModel, (transaction) => transaction.user)
+  @OneToMany(() => UserTransactionModel, transaction => transaction.user)
   @JoinColumn()
-  transactions: UserTransactionModel[]
+  transactions: UserTransactionModel[];
 
   @CreateDateColumn()
   createdAt: Date;
@@ -113,7 +114,7 @@ export class UserWallet extends BaseEntity {
     this.virtualAccountName = `${this.user.firstname} ${this.user.lastname}`;
     this.bankName = response.data.bank_name;
     this.txReference = response.data.flw_ref;
-    this.accountStatus = response.data.account_status || 'active';
+    this.accountStatus = response.data.account_status || "active";
     this.responseCode = response.data.response_code;
     this.responseMessage = response.data.response_message;
     this.orderRef = response.data.order_ref;

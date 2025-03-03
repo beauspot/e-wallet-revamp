@@ -1,38 +1,39 @@
-import { v4 as uuidv4 } from "uuid";
 import {
-    Entity,
-    Column,
-    PrimaryGeneratedColumn,
-    CreateDateColumn,
-    BeforeInsert,
-    JoinColumn,
-    OneToOne,
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  BeforeInsert,
+  JoinColumn,
+  OneToOne
 } from "typeorm";
+import { v4 as uuidv4 } from "uuid";
+
 import { User } from "@/db/user.entity";
 
-@Entity({name: "settlemeant"})
+@Entity({ name: "settlemeant" })
 export class SettlementAcct {
-    @PrimaryGeneratedColumn("uuid")
-    id: string;
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
-    @Column({ type: "varchar", length: 10, nullable: false }) // Keep varchar for PostgreSQL
-    accountNumber: string; // Change type to string to match varchar
+  @Column({ type: "varchar", length: 10, nullable: false }) // Keep varchar for PostgreSQL
+  accountNumber: string; // Change type to string to match varchar
 
-    @Column({ type: "varchar", nullable: false })
-    accountName: string;
+  @Column({ type: "varchar", nullable: false })
+  accountName: string;
 
-    @Column({ type: "boolean", nullable: false, default: false })
-    default: boolean;
+  @Column({ type: "boolean", nullable: false, default: false })
+  default: boolean;
 
-    @OneToOne(() => User, (user) => user.settlementAcct)
-    @JoinColumn()
-    userAcct: User;
+  @OneToOne(() => User, user => user.settlementAcct)
+  @JoinColumn()
+  userAcct: User;
 
-    @BeforeInsert()
-    generateId() {
-        this.id = `SettleAcctID-${uuidv4()}`;
-    }
+  @BeforeInsert()
+  generateId() {
+    this.id = `SettleAcctID-${uuidv4()}`;
+  }
 
-    @CreateDateColumn()
-    createdAt: Date;
+  @CreateDateColumn()
+  createdAt: Date;
 }

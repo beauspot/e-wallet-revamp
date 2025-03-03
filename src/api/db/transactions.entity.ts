@@ -1,102 +1,109 @@
-import { v4 as uuidv4 } from "uuid";
 import {
-    Entity,
-    Column,
-    PrimaryGeneratedColumn,
-    CreateDateColumn,
-    BeforeInsert,
-    BeforeUpdate,
-    AfterInsert,
-    AfterUpdate,
-    BaseEntity,
-    ManyToOne,
-    JoinColumn
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  BeforeInsert,
+  BeforeUpdate,
+  AfterInsert,
+  AfterUpdate,
+  BaseEntity,
+  ManyToOne,
+  JoinColumn
 } from "typeorm";
-import logging from "@/utils/logging";
+import { v4 as uuidv4 } from "uuid";
+
 import { User } from "@/db/user.entity";
 import { UserWallet } from "@/db/wallet.entity";
 import { TransactionStatus, TransactionType, PaymentType } from "@/enum/transactions.enum";
+import logging from "@/utils/logging";
 
-@Entity({name: "transactions"})
+@Entity({ name: "transactions" })
 export class UserTransactionModel extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid")
-    id: string;
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
-    @Column({ type: "varchar", nullable: false })
-    reference: string;
+  @Column({ type: "varchar", nullable: false })
+  reference: string;
 
-    @Column({ type: "varchar", nullable: false })
-    gatewayReference: string;
+  @Column({ type: "varchar", nullable: false })
+  gatewayReference: string;
 
-    @Column({ nullable: false, type: "enum", enum: TransactionType, default: TransactionType.Debit })
-    transactionType: TransactionType;
+  @Column({ nullable: false, type: "enum", enum: TransactionType, default: TransactionType.Debit })
+  transactionType: TransactionType;
 
-    @Column("decimal", { precision: 10, scale: 2, default: 0 })
-    amount: number;
+  @Column("decimal", { precision: 10, scale: 2, default: 0 })
+  amount: number;
 
-    @Column({ type: "varchar", default: "₦" })
-    currency: string;
+  @Column({ type: "varchar", default: "₦" })
+  currency: string;
 
-    @Column({ type: "varchar", nullable: true })
-    recipient: string;
+  @Column({ type: "varchar", nullable: true })
+  recipient: string;
 
-    @Column({ nullable: false, type: "enum", enum: TransactionStatus, default: TransactionStatus.Pending })
-    status: TransactionStatus;
+  @Column({
+    nullable: false,
+    type: "enum",
+    enum: TransactionStatus,
+    default: TransactionStatus.Pending
+  })
+  status: TransactionStatus;
 
-    @Column({ nullable: false, type: "enum", enum: PaymentType })
-    paymentType: PaymentType;
+  @Column({ nullable: false, type: "enum", enum: PaymentType })
+  paymentType: PaymentType;
 
-    @Column({ type: "varchar", nullable: true })
-    description: string;
+  @Column({ type: "varchar", nullable: true })
+  description: string;
 
-    @ManyToOne(() => User, (user) => user.transactions, {
-        onDelete: "CASCADE",
-        eager: true
-    })
-    @JoinColumn()
-    user: User;
+  @ManyToOne(() => User, user => user.transactions, {
+    onDelete: "CASCADE",
+    eager: true
+  })
+  @JoinColumn()
+  user: User;
 
-    @ManyToOne(() => UserWallet, (wallet) => wallet.transactions)
-    @JoinColumn()
-    wallet: UserWallet;
+  @ManyToOne(() => UserWallet, wallet => wallet.transactions)
+  @JoinColumn()
+  wallet: UserWallet;
 
-    @BeforeInsert()
-    @BeforeUpdate()
-    trimFields() {
-        if (this.reference) this.reference = this.reference.trim();
-        if (this.gatewayReference) this.gatewayReference = this.gatewayReference.trim();
+  @BeforeInsert()
+  @BeforeUpdate()
+  trimFields() {
+    if (this.reference) {
+      this.reference = this.reference.trim();
     }
-
-    static async sumBalance(userId: string) {
-        const result = await this.createQueryBuilder("transaction")
-            .select("SUM(transaction.amount)", "transactionSum")
-            .where("transaction.userId = :userId", { userId })
-            .andWhere("transaction.status = :status", { status: TransactionStatus.Successful })
-            .getRawOne();
-
-        const totalBalance = result?.transactionSum || 0;
-
-        try {
-            await UserWallet.update(
-                { user: { id: userId } },
-                { balance: totalBalance }
-            );
-        } catch (error: any) {
-            logging.error(error.message)
-        }
+    if (this.gatewayReference) {
+      this.gatewayReference = this.gatewayReference.trim();
     }
+  }
 
-    @AfterInsert()
-    @AfterUpdate()
-    async updateBalance() {
-        await UserTransactionModel.sumBalance(this.user.id);
+  static async sumBalance(userId: string) {
+    const result = await this.createQueryBuilder("transaction")
+      .select("SUM(transaction.amount)", "transactionSum")
+      .where("transaction.userId = :userId", { userId })
+      .andWhere("transaction.status = :status", { status: TransactionStatus.Successful })
+      .getRawOne();
+
+    const totalBalance = result?.transactionSum || 0;
+
+    try {
+      await UserWallet.update({ user: { id: userId } }, { balance: totalBalance });
+    } catch (error: any) {
+      logging.error(error.message);
     }
+  }
 
-    @BeforeInsert()
-    generateId() {
-        this.id = `TransactionID-${uuidv4()}`;
-    }
+  @AfterInsert()
+  @AfterUpdate()
+  async updateBalance() {
+    await UserTransactionModel.sumBalance(this.user.id);
+  }
 
-    @CreateDateColumn()
-    createdAt: Date;
+  @BeforeInsert()
+  generateId() {
+    this.id = `TransactionID-${uuidv4()}`;
+  }
+
+  @CreateDateColumn()
+  createdAt: Date;
 }

@@ -1,6 +1,5 @@
-import { v4 as uuidv4 } from "uuid";
 import * as bcrypt from "bcryptjs";
-import Cryptojs from "crypto-js";
+import crypto from "crypto";
 import {
   Entity,
   Column,
@@ -11,16 +10,17 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  PrimaryGeneratedColumn,
+  PrimaryGeneratedColumn
 } from "typeorm";
-import crypto from "crypto";
+import { v4 as uuidv4 } from "uuid";
 
-import { gender_enum, userRole } from "@/enum/user.enum";
-import { UserWallet } from "@/db/wallet.entity";
 import { SettlementAcct } from "@/db/settlementAccts.entity";
 import { UserTransactionModel } from "@/db/transactions.entity";
+import { UserWallet } from "@/db/wallet.entity";
+import { gender_enum, userRole } from "@/enum/user.enum";
+import Cryptojs from "crypto-js";
 
-@Entity({name: "User"})
+@Entity({ name: "User" })
 export class User {
   @PrimaryGeneratedColumn("uuid")
   id: string;
@@ -60,43 +60,43 @@ export class User {
 
   @Column({ type: "enum", enum: userRole, default: userRole.Customer, nullable: false })
   role: userRole;
-  
+
   // @Column({ type: "varchar", nullable: true })
   // accountName: string;
-  
+
   @Column({ type: "text", nullable: true })
   address: string;
-  
+
   @Column({ type: "timestamp", nullable: true })
   passwordChangedAt: Date;
-  
+
   @Column({ type: "varchar", nullable: true })
   passwordResetToken: string;
-  
+
   @Column({ type: "timestamp", nullable: true })
   passwordResetExpires: Date;
-  
+
   @Column({ type: "int", default: 0 })
   passwordResetAttempts: number;
-  
+
   @Column({ type: "varchar", unique: true, nullable: true })
   account_no: string;
 
-  @OneToOne(() => SettlementAcct, (settlementAcct) => settlementAcct.userAcct, {
+  @OneToOne(() => SettlementAcct, settlementAcct => settlementAcct.userAcct, {
     cascade: true,
     onDelete: "CASCADE"
   })
   @JoinColumn()
   settlementAcct: SettlementAcct;
-  
-  @OneToOne(() => UserWallet, (wallet) => wallet.user, {
+
+  @OneToOne(() => UserWallet, wallet => wallet.user, {
     cascade: true,
     onDelete: "CASCADE"
   })
   @JoinColumn()
   wallet: UserWallet;
 
-  @OneToMany(() => UserTransactionModel, (transaction) => transaction.user, {
+  @OneToMany(() => UserTransactionModel, transaction => transaction.user, {
     cascade: true,
     onDelete: "CASCADE"
   })
@@ -158,10 +158,14 @@ export class User {
   @BeforeInsert()
   @BeforeUpdate()
   encryptSensitiveData() {
-    if (this.bvn) this.bvn = this.encryptData(this.bvn);
-    if (this.nin) this.nin = this.encryptData(this.nin);
+    if (this.bvn) {
+      this.bvn = this.encryptData(this.bvn);
+    }
+    if (this.nin) {
+      this.nin = this.encryptData(this.nin);
+    }
   }
-  
+
   // decryptSensitiveData() {
   //   if(this.bvn) this.bvn = this.decryptData(this.bvn)
   // }
@@ -169,9 +173,9 @@ export class User {
   @BeforeInsert()
   @BeforeUpdate()
   syncAccountNoWithWallet() {
-    if (this.wallet)
+    if (this.wallet) {
       this.account_no = this.wallet.virtualAccountNumber;
-
+    }
   }
 
   createPasswordResetToken(): string {
@@ -192,10 +196,10 @@ export class User {
 
   encryptData = (data: string): string => {
     return Cryptojs.AES.encrypt(data, process.env.ENCRYPTION_KEY!).toString();
-  }
+  };
 
   decryptData = (encryptedData: string): string => {
     const bytes = Cryptojs.AES.decrypt(encryptedData, process.env.ENCRYPTION_KEY!);
     return bytes.toString(Cryptojs.enc.Utf8);
-  }
+  };
 }
