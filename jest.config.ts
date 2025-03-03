@@ -1,6 +1,7 @@
-import 'tsconfig-paths/register';
-import { pathsToModuleNameMapper, JestConfigWithTsJest } from "ts-jest";
-import { compilerOptions } from "./tsconfig.json";
+import { JestConfigWithTsJest } from "ts-jest";
+import "tsconfig-paths/register";
+
+// import { compilerOptions } from "./tsconfig.json";
 
 const jestConfig: JestConfigWithTsJest = {
   testEnvironment: "node",
@@ -33,13 +34,16 @@ const jestConfig: JestConfigWithTsJest = {
     "^@/types/(.*)$": ["<rootDir>/src/api/types/$1"],
     "^@/queues/(.*)$": ["<rootDir>/src/api/helpers/queues/$1"],
     "^@/templates/(.*)$": ["<rootDir>/src/api/helpers/templates/$1"],
-    "^@/(.*)$": ["<rootDir>/src/$1"],
+    "^@/(.*)$": ["<rootDir>/src/$1"]
   },
-  setupFilesAfterEnv: ["<rootDir>/src/__tests__/setup-redis.ts", "<rootDir>/src/__tests__/setupdb.ts"],
+  setupFilesAfterEnv: [
+    "<rootDir>/src/__tests__/setup-redis.ts",
+    "<rootDir>/src/__tests__/setupdb.ts"
+  ],
   transform: {
-    "^.+\\.tsx?$": ["ts-jest", { tsconfig: "tsconfig.json" }],
+    "^.+\\.tsx?$": ["ts-jest", { tsconfig: "tsconfig.json" }]
   },
-  testPathIgnorePatterns: ['./node_modules/', './.dist/', './dist', './.vscode'],
+  testPathIgnorePatterns: ["./node_modules/", "./.dist/", "./dist", "./.vscode"]
 };
 
 export default jestConfig;
