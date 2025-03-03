@@ -11,7 +11,17 @@
     "lint-fix": "npx eslint --fix .",
     "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
     "start:test": "jest",
-    "clear": "jest --clearCache"
+    "clear": "jest --clearCache",
+    "prepare": "husky"
+  }, 
+  "lint-staged": {
+    "src/**/*.{ts, tsx, js, jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "src/**/*.{json, css, md}": [
+      "prettier --write"
+    ]
   },
   "repository": {
     "type": "git",
