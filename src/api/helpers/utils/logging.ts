@@ -1,7 +1,8 @@
+/* eslint-disable no-var */
+import dayjs from "dayjs";
 import fs from "fs";
 import path from "path";
 import pino from "pino";
-import dayjs from "dayjs";
 
 const logDir = path.resolve(__dirname, "../../../../logs");
 
@@ -11,16 +12,16 @@ if (process.env.NODE_ENV === "production") {
     if (!fs.existsSync(logDir)) {
       fs.mkdirSync(logDir, { recursive: true, mode: 0o755 });
     }
-  } catch (err) {
-    console.error(`Error creating log directory: ${err}`);
+  } catch (err: any) {
+    console.error(`Error creating log directory: ${err.message}`);
     process.exit(1);
   }
 
   // Ensure write permission
   try {
     fs.accessSync(logDir, fs.constants.W_OK);
-  } catch (error) {
-    console.error(`No write permissions for log directory: ${logDir}`);
+  } catch (error: any) {
+    console.error(`No write permissions for log directory: ${logDir} ${error.message}`);
     process.exit(1);
   }
 }
@@ -34,9 +35,9 @@ if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
       level: "trace", // Capture all log levels
       stream: pino.transport({
         target: "pino-pretty",
-        options: { colorize: true },
-      }),
-    },
+        options: { colorize: true }
+      })
+    }
   ];
 } else {
   // Production: logs to files
@@ -46,7 +47,7 @@ if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
     { level: "debug", stream: pino.destination(path.join(logDir, "debug.log")) },
     { level: "warn", stream: pino.destination(path.join(logDir, "warn.log")) },
     { level: "fatal", stream: pino.destination(path.join(logDir, "fatal.log")) },
-    { level: "trace", stream: pino.destination(path.join(logDir, "trace.log")) },
+    { level: "trace", stream: pino.destination(path.join(logDir, "trace.log")) }
   ];
 }
 
@@ -55,7 +56,7 @@ const logging = pino(
   {
     level: "trace", // Capture all log levels
     base: { pid: false },
-    timestamp: () => `,"time":"${dayjs().format()}"`,
+    timestamp: () => `,"time":"${dayjs().format()}"`
   },
   pino.multistream(streams) // Use pino.multistream for handling multiple streams
 );
