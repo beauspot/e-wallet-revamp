@@ -82,7 +82,8 @@ export default [
       "import/prefer-default-export": "off",
       "unicorn/no-null": "off",
       "unicorn/prevent-abbreviations": "off",
-      "unicorn/prefer-export-from": "off"
+      "unicorn/prefer-export-from": "off",
+      "no-constant-binary-expression": "off"
     }
   },
   {
