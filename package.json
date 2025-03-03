@@ -13,7 +13,7 @@
     "start:test": "jest",
     "clear": "jest --clearCache",
     "prepare": "husky"
-  }, 
+  },
   "lint-staged": {
     "src/**/*.{ts, tsx, js, jsx}": [
       "eslint --fix",

@@ -1,8 +1,9 @@
 {
-  "extends": "./tsconfig.json", // Extend your main tsconfig.json
+  "extends": "./tsconfig.json", 
   "include": [
-    "src/**/*.ts", // Include all TypeScript files under src
-    "eslint.config.mjs" // Explicitly include eslint.config.mjs
+    "src/**/*.ts",
+    "eslint.config.mjs",
+    "jest.config.ts"
   ],
   "exclude": ["node_modules", "dist"]
 }
