@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { User } from "@/db/user.entity";
 import { gender_enum, userRole } from "@/enum/user.enum";
 import { VerificationInstance } from "twilio/lib/rest/verify/v2/service/verification";
@@ -26,18 +27,17 @@ interface userWalletPayloadInterface {
   email: string;
 }
 
-
 interface UserSercviceInterface {
   registerUser(userData: Partial<userInterface>): Promise<{ user: User }>;
   verifyEmailOTP(email: string, otp: string): Promise<boolean>;
   loginUser(identifier: string, password: string): Promise<User>;
-  logout(session:Express.Session): Promise<void>;
+  logout(session: Express.Session): Promise<void>;
   // forgotPassword(identifier: string): Promise<string>;
   // forgotTransactionPin(email: string): Promise<string>;
   // resetPassword(email: string, otp: string, newPassword: string): Promise<string>;
   // resetTransactionPin(email: string, otp: string, newPin: string): Promise<string>;
   // updatePassword(userId: string, currentPassword: string, newPassword: string): Promise<string>;
   // updateTransactionPin(userId: string, currentPin: string, newPin: string): Promise<string>;
-};
+}
 
 export { userInterface, UserSercviceInterface, VerificationInstance, userWalletPayloadInterface };

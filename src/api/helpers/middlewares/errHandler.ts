@@ -1,15 +1,12 @@
-import { Request, Response, NextFunction, ErrorRequestHandler } from "express";
-import { StatusCodes } from "http-status-codes";
-import AppError from "@/api/helpers/utils/appErrors";
+import { ErrorRequestHandler, Request, Response } from "express";
 
-const globalErrorHandler: ErrorRequestHandler = (
-  err: AppError,
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+import AppError from "@/api/helpers/utils/appErrors";
+import { StatusCodes } from "http-status-codes";
+
+const globalErrorHandler: ErrorRequestHandler = (err: AppError, _: Request, res: Response) => {
   // set default values for missing Error Properties
   const statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
+  // eslint-disable-next-line no-constant-binary-expression
   const status = err.status || "error" || "Error";
 
   // Check if it's an operational error or a programming error
@@ -25,7 +22,7 @@ const globalErrorHandler: ErrorRequestHandler = (
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       status: "Error",
       message: err.message
-    })
+    });
   }
 };
 
