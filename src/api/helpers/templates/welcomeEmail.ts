@@ -1,9 +1,10 @@
-import { baseTemplate } from './baseTemplate';
-import { WelcomeEmailData } from "@/interfaces/email.interface"
+import { WelcomeEmailData } from "@/interfaces/email.interface";
+
+import { baseTemplate } from "./baseTemplate";
 
 export const welcomeEmail = (data: WelcomeEmailData) => {
-	return baseTemplate(
-		`<h1>Welcome, ${data.firstName}!</h1>
+  return baseTemplate(
+    `<h1>Welcome, ${data.firstName}!</h1>
 			<p>
 				We’re thrilled to have you on board. To complete your registration on WalletHub, Enter the One-Time-Password your email address:
 			</p>
@@ -38,5 +39,5 @@ export const welcomeEmail = (data: WelcomeEmailData) => {
 				<a href="{{help_url}}">Onboarding guide</a>.
 			</p>
 			</table> `
-	);
+  );
 };
