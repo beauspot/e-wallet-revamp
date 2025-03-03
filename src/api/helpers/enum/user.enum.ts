@@ -1,11 +1,12 @@
+/* eslint-disable no-unused-vars */
 enum gender_enum {
   male = "male",
-  female = "female",
+  female = "female"
 }
 
 enum userRole {
   Admin = "admin",
-  Customer = "customer",
+  Customer = "customer"
 }
 
 export { gender_enum, userRole };
