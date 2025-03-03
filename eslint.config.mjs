@@ -19,15 +19,13 @@ export default [
         jest: true,
         process: "readonly"
       },
-      ecmaVersion: "latest",
-      sourceType: "module",
-      parser: tseslint.parser,
       parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
+        parser: tseslint.parser,
         project: "./tsconfig.eslint.json",
         tsconfigRootDir: process.cwd(),
-        ecmaFeatures: {
-          experimentalDecorators: true
-        }
+        experimentalDecorators: true
       }
     }
   },
