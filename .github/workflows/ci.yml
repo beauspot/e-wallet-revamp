@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: ['19.x', '18.x']
+        node-version: ["19.x", "18.x"]
     steps:
       - uses: actions/checkout@v2
-      
+
       - name: Set up Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
@@ -25,19 +25,19 @@ jobs:
 
       - name: Install pnpm package globally
         run: npm install -g pnpm
-      
+
       - name: Install dependencies
         run: pnpm install
 
       - name: Run build
         run: pnpm run build --if-present
-      
+
       - name: Run tests
         run: pnpm test
-      
+
       - name: Test Reports
         uses: dorny/test-reporter@v1
-        if: always()  # Ensure test report step runs regardless of success or failure
+        if: always() # Ensure test report step runs regardless of success or failure
         with:
           name: Test Results
           path: reports/test-results.json
