@@ -1,4 +1,4 @@
-import { __ForgotPasswordData__ } from "@/interfaces/email.interface"
+import { __ForgotPasswordData__ } from "@/interfaces/email.interface";
 
 export const forgotPassword = (data: __ForgotPasswordData__) => {
   return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
