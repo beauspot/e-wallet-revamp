@@ -12,7 +12,7 @@ export class WalletController {
 
   getWallet: RequestHandler = AsyncHandler(async (req: ExtendRequest, res) => {
     if (!req.user?.id) {
-      throw new AppError("User is not authenticated.", "failed", false, StatusCodes.UNAUTHORIZED);
+      throw new AppError("User is not authenticated.", StatusCodes.UNAUTHORIZED, false);
     }
 
     const wallet = await this.walletService.getWallet(req.user.id);
@@ -24,7 +24,7 @@ export class WalletController {
 
   getBalance: RequestHandler = AsyncHandler(async (req: ExtendRequest, res) => {
     if (!req.user?.id) {
-      throw new AppError("User is not authenticated.", "failed", false, StatusCodes.UNAUTHORIZED);
+      throw new AppError("User is not authenticated.", StatusCodes.UNAUTHORIZED, false);
     }
     const balance = await this.walletService.getBalance(req.user.id);
     res.status(StatusCodes.OK).json({
@@ -35,7 +35,7 @@ export class WalletController {
 
   deposit: RequestHandler = AsyncHandler(async (req: ExtendRequest, res) => {
     if (!req.user?.email) {
-      throw new AppError("User is not authenticated.", "failed", false, StatusCodes.UNAUTHORIZED);
+      throw new AppError("User is not authenticated.", StatusCodes.UNAUTHORIZED, false);
     }
     const response = await this.walletService.deposit(req.body, req.user.email);
     res.status(200).json({
@@ -56,7 +56,7 @@ export class WalletController {
 
   transfer: RequestHandler = AsyncHandler(async (req: ExtendRequest, res) => {
     if (!req.user?.id) {
-      throw new AppError("User is not authenticated.", "failed", false, StatusCodes.UNAUTHORIZED);
+      throw new AppError("User is not authenticated.", StatusCodes.UNAUTHORIZED, false);
     }
     const response = await this.walletService.transfer(req.body, req.user.id);
     res.status(200).json({

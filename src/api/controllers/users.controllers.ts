@@ -33,12 +33,7 @@ export class UserController {
     const user = await this.userService.loginUser(identifier, password);
 
     if (!req.session) {
-      throw new AppError(
-        "Session is not available",
-        "failed",
-        false,
-        StatusCodes.INTERNAL_SERVER_ERROR
-      );
+      throw new AppError("Session is not available", StatusCodes.INTERNAL_SERVER_ERROR, false);
     }
 
     req.session.userId = user.id;
@@ -61,7 +56,7 @@ export class UserController {
 
   LogoutUser: RequestHandler = AsyncHandler(async (req, res): Promise<void> => {
     if (!req.session) {
-      throw new AppError("No active session found", "failed", false, StatusCodes.BAD_REQUEST);
+      throw new AppError("No active session found", StatusCodes.BAD_REQUEST, false);
     }
 
     await this.userService.logout(req.session);
