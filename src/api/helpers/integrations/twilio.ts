@@ -24,7 +24,7 @@ export class TwilioConfig implements TwilioClassConfig {
     });
 
     if (existingUser) {
-      throw new AppError("user already exists, Login", "400", false);
+      throw new AppError("user already exists, Login", 400, false);
     }
     const client = twilio(accountSid, authToken);
 
@@ -71,11 +71,7 @@ export class TwilioConfig implements TwilioClassConfig {
 
   private formatPhoneNumber(phoneNumber: string): string {
     if (!phoneNumber.startsWith("+")) {
-      throw new AppError(
-        "Phone number must be in E.164 format (e.g., +1234567890)",
-        "failed",
-        false
-      );
+      throw new AppError("Phone number must be in E.164 format (e.g., +1234567890)", 400, false);
     }
     return phoneNumber;
   }
