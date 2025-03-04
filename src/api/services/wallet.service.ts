@@ -35,7 +35,7 @@ export class WalletService implements WalletServiceInterface {
     });
 
     if (!wallet) {
-      throw new AppError("Wallet Not found Please contact administrator", "Failed", false, 400);
+      throw new AppError("Wallet Not found Please contact administrator", 400, false);
     }
 
     return wallet;
@@ -49,12 +49,7 @@ export class WalletService implements WalletServiceInterface {
     });
 
     if (!wallet) {
-      throw new AppError(
-        "You don't have a wallet. Please contact the administrator",
-        "false",
-        false,
-        400
-      );
+      throw new AppError("You don't have a wallet. Please contact the administrator", 400, false);
     }
 
     return wallet.balance;
@@ -85,23 +80,23 @@ export class WalletService implements WalletServiceInterface {
       relations: ["user"]
     });
     if (!wallet) {
-      throw new AppError("Wallet not found", "false", false, 404);
+      throw new AppError("Wallet not found", 400, false);
     }
 
     const userRepository = AppDataSource.getRepository(this.user);
     const user = await userRepository.findOne({ where: { id: userId } });
 
     if (!user) {
-      throw new AppError("User not found", "false", false, 401);
+      throw new AppError("User not found", 401, false);
     }
 
     const validPin = bcrypt.compare(payload.transactionPin, user.transaction_pin);
     if (!validPin) {
-      throw new AppError("Invalid transaction pin", "false", false, 401);
+      throw new AppError("Invalid transaction pin", 401, false);
     }
 
     if (wallet.balance < payload.amount || wallet.balance - payload.amount <= 100) {
-      throw new AppError("Insufficient funds or minimum balance required", "false", false, 400);
+      throw new AppError("Insufficient funds or minimum balance required", 400, false);
     }
 
     const details = {

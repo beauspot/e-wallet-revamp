@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import * as bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { Service } from "typedi";
@@ -88,7 +87,7 @@ export class UserService implements UserSercviceInterface {
     const hashedOtp = await redisClient.get(`otp:${email}`);
 
     if (!hashedOtp) {
-      throw new AppError("Invalid OTP or OTP expired", "failed", false, 400);
+      throw new AppError("Invalid OTP or OTP expired", 400, false);
     }
 
     const isMatch = await this.verifyOtpHash(otp, hashedOtp);
@@ -105,7 +104,7 @@ export class UserService implements UserSercviceInterface {
 
   async loginUser(identifier: string, password: string) {
     if (!identifier || !password) {
-      throw new AppError("Provide phone or email and password!", "failed", false, 400);
+      throw new AppError("Provide phone or email and password!", 400, false);
     }
 
     const user = await AppDataSource.getRepository(this.userEntity).findOne({
@@ -114,7 +113,7 @@ export class UserService implements UserSercviceInterface {
     });
 
     if (!user || !(await this.verifyPassword(password, user.password))) {
-      throw new AppError("Incorrect email/phone number or password", "failed", false, 401);
+      throw new AppError("Incorrect email/phone number or password", 401, false);
     }
 
     return user;
@@ -124,7 +123,7 @@ export class UserService implements UserSercviceInterface {
     return new Promise((resolve, reject) => {
       session.destroy((error: any) => {
         if (error) {
-          return reject(new AppError("Logout Failed.", "failed", false, 500));
+          return reject(new AppError("Logout Failed.", 500, false));
         }
         resolve();
       });
