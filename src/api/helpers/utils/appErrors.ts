@@ -1,36 +1,29 @@
 /* eslint-disable no-var */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-/* eslint-disable no-unused-vars */
-import { AppErrorInterface } from "@/interfaces/appError.interface";
 
-class AppError extends Error implements AppErrorInterface {
+/* eslint-disable no-unused-vars */
+
+class AppError extends Error {
   constructor(
     public message: string,
-    public status?: string,
-    public isOperational?: boolean,
-    public statusCode?: number
+    public statusCode: number = 500,
+    public isOperational: boolean = true
   ) {
-    // Call the super constructor to set the error message
     super(message);
 
-    // Set additional properties for the error
-    this.statusCode = statusCode; // HTTP status code
+    // Maintain proper stack trace
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, this.constructor);
+    }
 
-    this.status = `${statusCode}`.startsWith("4") ? "fail" : "error"; // Status string: "fail" for 4xx codes, "error" for others
-
-    this.isOperational = true; // Indicates whether the error is operational (i.e. caused by user input) or a programming error
-
-    // Capture the stack trace for debugging
-    Error.captureStackTrace(this, this.constructor);
+    this.name = this.constructor.name;
   }
 }
 
+// Global availability
 declare global {
-  // @ts-ignore
-  var Apprror: typeof AppError;
+  var AppError: any;
 }
 
-// @ts-ignore
-globalThis.AppError = AppError;
+global.AppError = AppError;
 
 export default AppError;
