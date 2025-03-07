@@ -12,7 +12,9 @@
     "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
     "start:test": "jest",
     "clear": "jest --clearCache",
-    "migration:up": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d ./src/api/helpers/configs/db.config.ts"
+    "migration:up": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d ./src/api/helpers/configs/db.config.ts",
+    "migration:down": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert -d ./src/api/helpers/configs/db.config.ts",
+    "migration:show": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:show -d ./src/api/helpers/configs/db.config.ts"
   },
   "lint-staged": {
     "src/**/*.{ts, tsx, js, jsx}": [
