@@ -11,7 +11,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import { User } from "@/db/user.entity";
 
-@Entity({ name: "settlemeant" })
+@Entity({ name: "settlement" })
 export class SettlementAcct {
   @PrimaryGeneratedColumn("uuid")
   id: string;
