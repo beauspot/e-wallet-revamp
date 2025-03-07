@@ -5,14 +5,14 @@
   "scripts": {
     "build": "tsc",
     "start:dev": "NODE_ENV=development ts-node-dev --respawn -r tsconfig-paths/register src/server.ts",
-    "start:prod": "NODE_ENV=production ts-node src/server.ts",
+    "start:prod": "NODE_ENV=production ts-node dist/server.js",
     "dev": "nodemon ./dist/server.js",
     "lint": "npx eslint --max-warnings 0 .",
     "lint-fix": "npx eslint --fix .",
     "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
     "start:test": "jest",
     "clear": "jest --clearCache",
-    "prepare": "husky"
+    "migration:up": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d ./src/api/helpers/configs/db.config.ts"
   },
   "lint-staged": {
     "src/**/*.{ts, tsx, js, jsx}": [
@@ -69,7 +69,6 @@
     "resend": "^4.0.1",
     "streamifier": "^0.1.1",
     "swagger-ui-express": "^5.0.1",
-    "tsconfig-paths": "^4.2.0",
     "twilio": "^5.4.0",
     "typedi": "^0.10.0",
     "typeorm": "^0.3.21",
@@ -122,6 +121,7 @@
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",
     "ts-node-dev": "^2.0.0",
+    "tsconfig-paths": "^4.2.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.24.1"
