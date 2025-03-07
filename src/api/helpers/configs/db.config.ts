@@ -18,8 +18,8 @@ if (process.env.NODE_ENV === "test") {
 
 log.info(`Current Environment: ${process.env.NODE_ENV} Environment`);
 
-const isDevelopment = process.env.NODE_ENV === "development";
-const synchronize = isDevelopment;
+// const isDevelopment = process.env.NODE_ENV === "development";
+const synchronize = false;
 
 const { DB_HOST, DB_PORT, DB_USER, DB_PWD, DB_NAME } = process.env;
 
@@ -41,13 +41,14 @@ export const AppDataSource = new DataSource({
   // logging: false,
   logging: ["error", "warn", "schema"],
   synchronize: synchronize,
+  migrations: ["src/api/migrations/**/*.ts"],
+  migrationsTableName: "user_wallet_migration_table",
   ssl:
     process.env.NODE_ENV === "production"
       ? {
           rejectUnauthorized: false
         }
       : false
-  // migrations:
 });
 
 export const db_init = async () => {
