@@ -11,6 +11,7 @@ let connection;
 beforeAll(async () => {
   process.env.NODE_ENV = "test";
   connection = await AppDataSource.initialize();
+  await connection.dropDatabase();
   await connection.synchronize();
 });
 
