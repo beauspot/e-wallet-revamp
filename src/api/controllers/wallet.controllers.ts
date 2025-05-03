@@ -1,14 +1,17 @@
 import { RequestHandler } from "express";
 import AsyncHandler from "express-async-handler";
 
+import { injectable, inject } from "tsyringe";
+
 import { ExtendRequest } from "@/interfaces/extendRequest.interface";
 import { SessionData } from "@/interfaces/wallet.interface";
 import { WalletService } from "@/services/wallet.service";
 import { StatusCodes } from "http-status-codes";
 
+@injectable()
 export class WalletController {
   // eslint-disable-next-line no-unused-vars
-  constructor(private walletService: WalletService) {}
+  constructor(@inject(WalletService) private walletService: WalletService) {}
 
   getWallet: RequestHandler = AsyncHandler(async (req: ExtendRequest, res) => {
     if (!req.user?.id) {
