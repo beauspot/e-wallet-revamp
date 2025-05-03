@@ -26,6 +26,7 @@ const jestConfig: JestConfigWithTsJest = {
     "^@/DTO/(.*)$": ["<rootDir>/src/api/helpers/DTO/$1"],
     "^@/enum/(.*)$": ["<rootDir>/src/api/helpers/enum/$1"],
     "^@/interfaces/(.*)$": ["<rootDir>/src/api/helpers/interfaces/$1"],
+    "^@/repositories/(.*)$": ["<rootDir>/src/api/helpers/repositories/$1"],
     "^@/lib/(.*)$": ["<rootDir>/src/api/helpers/lib/$1"],
     "^@/middlewares/(.*)$": ["<rootDir>/src/api/helpers/middlewares/$1"],
     "^@/utils/(.*)$": ["<rootDir>/src/api/helpers/utils/$1"],
