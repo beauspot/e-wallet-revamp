@@ -26,11 +26,19 @@ export class CreateInitialTables1741158530426 implements MigrationInterface {
 
     await queryRunner.query(`
       DO $$ BEGIN
-        CREATE TYPE TransactionType AS ENUM ('Debit', 'Credit');
+        CREATE TYPE "transactions_transactiontype_enum" AS ENUM ('Debit', 'Credit');
       EXCEPTION
         WHEN duplicate_object THEN null;
       END $$;
     `);
+
+    // Drop existing enum if needed (add this)
+    await queryRunner.query('DROP TYPE IF EXISTS "transactions_transactiontype_enum"');
+
+    // Create enum with exact case
+    await queryRunner.query(`
+    CREATE TYPE "transactions_transactiontype_enum" AS ENUM ('Debit', 'Credit');
+  `);
 
     await queryRunner.query(`
       DO $$ BEGIN
@@ -104,24 +112,24 @@ export class CreateInitialTables1741158530426 implements MigrationInterface {
 
     // Create Transactions Table
     await queryRunner.query(`
-      CREATE TABLE "transactions" (
-        "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-        "reference" varchar NOT NULL,
-        "gatewayReference" varchar NOT NULL,
-        "transactionType" TransactionType DEFAULT 'Debit',
-        "amount" numeric(10,2) DEFAULT 0,
-        "currency" varchar DEFAULT '₦',
-        "recipient" varchar,
-        "status" TransactionStatus DEFAULT 'Pending',
-        "paymentType" PaymentType NOT NULL,
-        "description" varchar,
-        "userId" uuid,
-        "walletId" uuid,
-        "createdAt" timestamp DEFAULT now(),
-        FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE,
-        FOREIGN KEY ("walletId") REFERENCES "virtualAccount"("id") ON DELETE SET NULL
-      );
-    `);
+    CREATE TABLE "transactions" (
+      "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+      "reference" varchar NOT NULL,
+      "gatewayReference" varchar NOT NULL,
+      "transactionType" "transactions_transactiontype_enum" DEFAULT 'Debit',
+      "amount" numeric(10,2) DEFAULT 0,
+      "currency" varchar DEFAULT '₦',
+      "recipient" varchar,
+      "status" TransactionStatus DEFAULT 'Pending',
+      "paymentType" PaymentType NOT NULL,
+      "description" varchar,
+      "userId" uuid,
+      "walletId" uuid,
+      "createdAt" timestamp DEFAULT now(),
+      FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE,
+      FOREIGN KEY ("walletId") REFERENCES "virtualAccount"("id") ON DELETE SET NULL
+    );
+  `);
 
     // Fix table name from "settlemeant" to "settlement"
     await queryRunner.query(`
@@ -144,7 +152,7 @@ export class CreateInitialTables1741158530426 implements MigrationInterface {
     await queryRunner.query('DROP TABLE "User"');
     await queryRunner.query("DROP TYPE IF EXISTS gender_enum");
     await queryRunner.query("DROP TYPE IF EXISTS userRole");
-    await queryRunner.query("DROP TYPE IF EXISTS TransactionType");
+    await queryRunner.query('DROP TYPE IF EXISTS "transactions_transactiontype_enum"');
     await queryRunner.query("DROP TYPE IF EXISTS TransactionStatus");
     await queryRunner.query("DROP TYPE IF EXISTS PaymentType");
   }
