@@ -1,15 +1,14 @@
 import { NextFunction, Request, Response, Router } from "express";
 
+import { container } from "tsyringe";
+
 import { UserController } from "@/controllers/users.controllers";
-import { User } from "@/db/user.entity";
 // import { validate } from "@/helpers/middlewares/validate";
 import { protect } from "@/middlewares/authMiddleware";
-// import { createUserSchema, loginUserSchema } from "@/schemas/user.schema";
-import { UserService } from "@/services/users.service";
 
-// Dependency injection
-const user_service = new UserService(User);
-const user_controller = new UserController(user_service);
+// import { createUserSchema, loginUserSchema } from "@/schemas/user.schema";
+
+const user_controller = container.resolve(UserController);
 
 const router = Router();
 
