@@ -18,8 +18,9 @@ if (process.env.NODE_ENV === "test") {
 
 log.info(`Current Environment: ${process.env.NODE_ENV} Environment`);
 
-// const isDevelopment = process.env.NODE_ENV === "development";
-const synchronize = false;
+// Only allow synchronize for test or dev environments without migrations
+const allowSync = process.env.SCHEMA_SYNC === "true";
+const synchronize = allowSync && process.env.NODE_ENV !== "production";
 
 const { DB_HOST, DB_PORT, DB_USER, DB_PWD, DB_NAME } = process.env;
 
