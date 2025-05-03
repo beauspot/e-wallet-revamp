@@ -14,7 +14,8 @@
     "clear": "jest --clearCache",
     "migration:up": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d ./src/api/helpers/configs/db.config.ts",
     "migration:down": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert -d ./src/api/helpers/configs/db.config.ts",
-    "migration:show": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:show -d ./src/api/helpers/configs/db.config.ts"
+    "migration:show": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:show -d ./src/api/helpers/configs/db.config.ts",
+    "create-migration": "typeorm migration:create"
   },
   "lint-staged": {
     "src/**/*.{ts, tsx, js, jsx}": [
@@ -71,8 +72,8 @@
     "resend": "^4.0.1",
     "streamifier": "^0.1.1",
     "swagger-ui-express": "^5.0.1",
+    "tsyringe": "^4.10.0",
     "twilio": "^5.4.0",
-    "typedi": "^0.10.0",
     "typeorm": "^0.3.21",
     "uuid": "^11.0.3",
     "validator": "^13.12.0",
