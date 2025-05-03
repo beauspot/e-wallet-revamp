@@ -1,12 +1,15 @@
 import { RequestHandler } from "express";
 import AsyncHandler from "express-async-handler";
 
+import { injectable, inject } from "tsyringe";
+
 import { UserService } from "@/services/users.service";
 import { StatusCodes } from "http-status-codes";
 
+@injectable()
 export class UserController {
   // eslint-disable-next-line no-unused-vars
-  constructor(private userService: UserService) {}
+  constructor(@inject(UserService) private userService: UserService) {}
 
   registerUser: RequestHandler = AsyncHandler(async (req, res) => {
     const { userData } = req.body;
