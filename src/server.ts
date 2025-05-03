@@ -2,8 +2,8 @@ import dotenv from "dotenv";
 import ip from "ip";
 
 import createApp from "@/app";
-import { db_init } from "@/configs/db.config";
 import redisModule from "@/configs/redis.config";
+import { db_init } from "@/helpers/configs/db.config";
 import log from "@/utils/logging";
 import "reflect-metadata";
 
@@ -16,6 +16,7 @@ const { redisClient, shutdownClient } = redisModule;
 async function startServer(): Promise<void> {
   try {
     await db_init();
+
     const app = createApp();
 
     app.listen(port, () => {
