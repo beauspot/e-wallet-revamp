@@ -66,11 +66,10 @@ export class UserWallet extends BaseEntity {
   @OneToOne(() => User, user => user.wallet, {
     onDelete: "CASCADE"
   })
-  @JoinColumn()
   user: User;
 
   @OneToMany(() => UserTransactionModel, transaction => transaction.user)
-  @JoinColumn()
+  @JoinColumn({ name: "transaction_id", referencedColumnName: "id" })
   transactions: UserTransactionModel[];
 
   @CreateDateColumn()

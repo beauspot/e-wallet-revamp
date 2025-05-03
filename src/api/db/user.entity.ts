@@ -86,14 +86,14 @@ export class User {
     cascade: true,
     onDelete: "CASCADE"
   })
-  @JoinColumn()
+  @JoinColumn({ name: "settlement_account_id", referencedColumnName: "id" })
   settlementAcct: SettlementAcct;
 
   @OneToOne(() => UserWallet, wallet => wallet.user, {
     cascade: true,
     onDelete: "CASCADE"
   })
-  @JoinColumn()
+  @JoinColumn({ name: "user_wallet_id" })
   wallet: UserWallet;
 
   @OneToMany(() => UserTransactionModel, transaction => transaction.user, {
