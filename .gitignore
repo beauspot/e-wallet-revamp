@@ -5,6 +5,7 @@ node_modules
 coverage
 jots.ts
 .env.test
+.env.production
 /src/api/helpers/integrations/emailEx.ts
 testQueues.ts
 todos.ts
