@@ -1,10 +1,10 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable no-unused-vars */
 import bcrypt from "bcryptjs";
-import { Service } from "typedi";
-
+import { Repository } from "typeorm";
+import { injectable, inject } from "tsyringe";
 import { FlutterwaveService as Flw } from "@/api/helpers/integrations/flutterwave";
-import { AppDataSource } from "@/configs/db.config";
+// import { AppDataSource } from "@/configs/db.config";
 import { UserTransactionModel } from "@/db/transactions.entity";
 import { User } from "@/db/user.entity";
 import { UserWallet } from "@/db/wallet.entity";
@@ -18,41 +18,41 @@ import { WalletServiceInterface, SessionData } from "@/interfaces/wallet.interfa
 import AppError from "@/utils/appErrors";
 import { generateReference } from "@/utils/generateRef";
 
-@Service()
+@injectable()
 export class WalletService implements WalletServiceInterface {
   constructor(
-    private wallet: typeof UserWallet,
-    private flw: Flw,
-    private transaction: typeof UserTransactionModel,
-    private user: typeof User
+    @inject(UserWallet) private wallet: Repository<UserWallet>,
+    @inject(Flw) private flw: Flw,
+    @inject(UserTransactionModel) private transaction: Repository<UserTransactionModel>,
+    @inject(User) private __user__: Repository<User>
   ) {}
 
   async getWallet(userId: string): Promise<UserWallet> {
-    const walletRepo = AppDataSource.getRepository(this.wallet);
-    const wallet = await walletRepo.findOne({
+    // const walletRepo = AppDataSource.getRepository(this.wallet);
+    const userWallet = await this.wallet.findOne({
       where: { user: { id: userId } },
       relations: ["user"]
     });
 
-    if (!wallet) {
+    if (!userWallet) {
       throw new AppError("Wallet Not found Please contact administrator", 400, false);
     }
 
-    return wallet;
+    return userWallet;
   }
 
   async getBalance(userId: string): Promise<number> {
-    const walletRepository = AppDataSource.getRepository(this.wallet);
-    const wallet = await walletRepository.findOne({
+    // const walletRepository = AppDataSource.getRepository(this.wallet);
+    const userwallet = await this.wallet.findOne({
       where: { user: { id: userId } },
       relations: ["user"]
     });
 
-    if (!wallet) {
+    if (!userwallet) {
       throw new AppError("You don't have a wallet. Please contact the administrator", 400, false);
     }
 
-    return wallet.balance;
+    return userwallet.balance;
   }
 
   async deposit(payload: CardChargePayload, userEmail: string): Promise<UserTransactionModel> {
@@ -74,17 +74,17 @@ export class WalletService implements WalletServiceInterface {
   }
 
   async transfer(payload: TransferPayload, userId: string): Promise<UserTransactionModel> {
-    const walletRepository = AppDataSource.getRepository(this.wallet);
-    const wallet = await walletRepository.findOne({
+    // const walletRepository = AppDataSource.getRepository(this.wallet);
+    const userwallet = await this.wallet.findOne({
       where: { user: { id: userId } },
       relations: ["user"]
     });
-    if (!wallet) {
+    if (!userwallet) {
       throw new AppError("Wallet not found", 400, false);
     }
 
-    const userRepository = AppDataSource.getRepository(this.user);
-    const user = await userRepository.findOne({ where: { id: userId } });
+    // const userRepository = AppDataSource.getRepository(this.user);
+    const user = await this.__user__.findOne({ where: { id: userId } });
 
     if (!user) {
       throw new AppError("User not found", 401, false);
@@ -95,7 +95,7 @@ export class WalletService implements WalletServiceInterface {
       throw new AppError("Invalid transaction pin", 401, false);
     }
 
-    if (wallet.balance < payload.amount || wallet.balance - payload.amount <= 100) {
+    if (userwallet.balance < payload.amount || userwallet.balance - payload.amount <= 100) {
       throw new AppError("Insufficient funds or minimum balance required", 400, false);
     }
 
@@ -132,9 +132,9 @@ export class WalletService implements WalletServiceInterface {
             : TransactionStatus.Successful
     };
 
-    const transactionRepo = AppDataSource.getRepository(this.transaction);
-    const wallet_transaction = transactionRepo.create(transaction);
-    await transactionRepo.save(wallet_transaction);
+    // const transactionRepo = AppDataSource.getRepository(this.transaction);
+    const wallet_transaction = this.transaction.create(transaction);
+    await this.transaction.save(wallet_transaction);
     return wallet_transaction;
   }
 }

@@ -1,23 +1,28 @@
 import * as bcrypt from "bcryptjs";
 import crypto from "crypto";
-import { Service } from "typedi";
+import { injectable, inject } from "tsyringe";
 
-import { AppDataSource } from "@/configs/db.config";
+// import { Repository } from "typeorm";
+
+// import { AppDataSource } from "@/configs/db.config";
 import redisModule from "@/configs/redis.config";
-import { User } from "@/db/user.entity";
+// import { User } from "@/db/user.entity";
 import { EmailJobData } from "@/interfaces/email.interface";
 import { userInterface, UserSercviceInterface } from "@/interfaces/user.interface";
 import emailQueues from "@/queues/email.queues";
 // import Queues
 import WalletQueue from "@/queues/wallet.queues";
+import { UserRepository } from "@/repositories/user.repo";
 
 const { redisClient } = redisModule;
 const { addMailToQueue } = emailQueues;
 
-@Service()
+@injectable()
 export class UserService implements UserSercviceInterface {
+  // constructor(@inject(User) private userEntity: Repository<User>) {}
+
   // eslint-disable-next-line no-unused-vars
-  constructor(private userEntity: typeof User) {}
+  constructor(@inject(UserRepository) private userRepository: UserRepository) {}
 
   IV_LENGTH = 16;
 
@@ -46,12 +51,17 @@ export class UserService implements UserSercviceInterface {
 
     const hashedPassword = await this.hashPassword(userData.password);
 
-    const userRepository = AppDataSource.getRepository(this.userEntity).create({
+    /*   const userRepository = AppDataSource.getRepository(this.userEntity).create({
+      ...userData,
+      password: hashedPassword
+    }); */
+    const userRepository = this.userRepository.create({
       ...userData,
       password: hashedPassword
     });
 
-    const savedUser = await AppDataSource.getRepository(this.userEntity).save(userRepository);
+    // const savedUser = await AppDataSource.getRepository(this.userEntity).save(userRepository);
+    const savedUser = await this.userRepository.save(userRepository);
     // log.info(savedUser);
 
     // Add the VAN creation job to the queue
@@ -107,7 +117,11 @@ export class UserService implements UserSercviceInterface {
       throw new AppError("Provide phone or email and password!", 400, false);
     }
 
-    const user = await AppDataSource.getRepository(this.userEntity).findOne({
+    /*  const user = await AppDataSource.getRepository(this.userEntity).findOne({
+      where: [{ email: identifier }, { phonenumber: identifier }],
+      select: ["id", "password"]
+    }); */
+    const user = await this.userRepository.findOne({
       where: [{ email: identifier }, { phonenumber: identifier }],
       select: ["id", "password"]
     });
