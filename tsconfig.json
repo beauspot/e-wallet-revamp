@@ -31,6 +31,7 @@
       "@/db/*": ["./src/api/db/*"],
       "@/helpers/*": ["./src/api/helpers/*"],
       "@/controllers/*": ["./src/api/controllers/*"],
+      "@/repositories/*": ["./src/api/helpers/repositories/*"],
       "@/routes/*": ["./src/api/routes/*"],
       "@/services/*": ["./src/api/services/*"],
       "@/schemas/*": ["./src/api/helpers/schemas/*"],
