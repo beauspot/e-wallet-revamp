@@ -8,8 +8,8 @@ import {
   AfterInsert,
   AfterUpdate,
   BaseEntity,
-  ManyToOne,
-  JoinColumn
+  ManyToOne
+  // JoinColumn
 } from "typeorm";
 import { v4 as uuidv4 } from "uuid";
 
@@ -59,11 +59,9 @@ export class UserTransactionModel extends BaseEntity {
     onDelete: "CASCADE",
     eager: true
   })
-  @JoinColumn()
   user: User;
 
   @ManyToOne(() => UserWallet, wallet => wallet.transactions)
-  @JoinColumn()
   wallet: UserWallet;
 
   @BeforeInsert()

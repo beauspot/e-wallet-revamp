@@ -4,7 +4,6 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   BeforeInsert,
-  JoinColumn,
   OneToOne
 } from "typeorm";
 import { v4 as uuidv4 } from "uuid";
@@ -26,7 +25,6 @@ export class SettlementAcct {
   default: boolean;
 
   @OneToOne(() => User, user => user.settlementAcct)
-  @JoinColumn()
   userAcct: User;
 
   @BeforeInsert()
