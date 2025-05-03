@@ -13,6 +13,7 @@ if (process.env.NODE_ENV === "production") {
       fs.mkdirSync(logDir, { recursive: true, mode: 0o755 });
     }
   } catch (err: any) {
+    // eslint-disable-next-line no-console
     console.error(`Error creating log directory: ${err.message}`);
     process.exit(1);
   }
@@ -21,6 +22,7 @@ if (process.env.NODE_ENV === "production") {
   try {
     fs.accessSync(logDir, fs.constants.W_OK);
   } catch (error: any) {
+    // eslint-disable-next-line no-console
     console.error(`No write permissions for log directory: ${logDir} ${error.message}`);
     process.exit(1);
   }
@@ -71,6 +73,6 @@ global.log = logging;
 
 // ** Test Logging **
 logging.info(`Logger initialized - Environment: ${process.env.NODE_ENV}`);
-logging.error("Logger initialized - Error level");
+logging.error("Logger initialized - Environment: Error level");
 
 export default logging;

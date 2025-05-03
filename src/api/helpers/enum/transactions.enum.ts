@@ -1,20 +1,20 @@
 /* eslint-disable no-unused-vars */
 
 enum TransactionStatus {
-  Pending = "pending",
-  Successful = "successful",
-  Failed = "failed",
-  Flagged = "flagged"
+  Pending = "Pending",
+  Successful = "Completed",
+  Failed = "Failed",
+  Flagged = "Flagged"
 }
 
 enum TransactionType {
-  Debit = "debit",
-  Credit = "credit"
+  Debit = "Debit",
+  Credit = "Credit"
 }
 
 enum PaymentType {
-  Card = "card",
-  Account = "account"
+  Card = "Card",
+  Account = "Account"
 }
 
 export { TransactionStatus, TransactionType, PaymentType };
