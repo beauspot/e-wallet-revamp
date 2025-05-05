@@ -72,7 +72,7 @@ declare global {
 global.log = logging;
 
 // ** Test Logging **
-logging.info(`Logger initialized - Environment: ${process.env.NODE_ENV}`);
-logging.error("Logger initialized - Environment: Error level");
+logging.info(`Logger initialized - TESTING - Environment: ${process.env.NODE_ENV}`);
+logging.error("Logger initialized - TESTING - Environment: Error level");
 
 export default logging;
