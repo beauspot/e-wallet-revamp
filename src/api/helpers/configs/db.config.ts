@@ -19,8 +19,8 @@ if (process.env.NODE_ENV === "test") {
 log.info(`Current Environment: ${process.env.NODE_ENV} Environment`);
 
 // Only allow synchronize for test or dev environments without migrations
-const allowSync = process.env.SCHEMA_SYNC === "true";
-const synchronize = allowSync && process.env.NODE_ENV !== "production";
+// const allowSync = process.env.SCHEMA_SYNC === "true";
+// const synchronize = allowSync && process.env.NODE_ENV !== "production";
 
 const { DB_HOST, DB_PORT, DB_USER, DB_PWD, DB_NAME } = process.env;
 
@@ -41,7 +41,7 @@ export const AppDataSource = new DataSource({
   entities: [User, UserWallet, SettlementAcct, UserTransactionModel],
   // logging: false,
   logging: ["error", "warn", "schema"],
-  synchronize: synchronize,
+  synchronize: false,
   migrations: ["src/api/migrations/**/*.ts"],
   migrationsTableName: "user_wallet_migration_table",
   ssl:
