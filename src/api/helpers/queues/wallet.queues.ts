@@ -108,9 +108,11 @@ const walletWorker = new Worker<VANPayload>(
       } = virtualAccountResponse.data;
 
       // Ensure the required fields are present
-      if (!account_number || !bank_name || !flw_ref) {
-        throw new AppError("Invalid data received from Flutterwave API");
-      }
+      // eslint-disable-next-line curly
+      if (!bank_name || !flw_ref) throw new AppError("Invalid data received from Flutterwave API");
+
+      // eslint-disable-next-line curly
+      if (!account_number) throw new AppError("Flutterwave failed to generate an account number");
 
       // Check for valid status and response message
       if (
@@ -150,7 +152,7 @@ const walletWorker = new Worker<VANPayload>(
       await walletRepository.save(wallet);
       log.info("Wallet created and linked to user");
 
-      if ((wallet.virtualAccountNumber = "null")) {
+      if (wallet.virtualAccountNumber === null) {
         log.info('Virtual Account number is "null", as this is a development environment');
       } else {
         log.info(
