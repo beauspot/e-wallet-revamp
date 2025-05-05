@@ -89,7 +89,7 @@ export class UserWallet extends BaseEntity {
       if (this.user.account_no) {
         this.virtualAccountNumber = this.user.account_no;
       } else {
-        this.virtualAccountNumber = this.user.phonenumber;
+        this.virtualAccountNumber = this.user.account_no || this.user.phonenumber;
       }
       if (this.user.address) {
         this.narration = `Narration: ${this.user.firstname} ${this.user.lastname} - ${this.user.address}`;
