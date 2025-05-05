@@ -174,7 +174,7 @@ export class User {
   @BeforeUpdate()
   syncAccountNoWithWallet() {
     if (this.wallet) {
-      this.account_no = this.wallet.virtualAccountNumber;
+      this.account_no = this.wallet.virtualAccountNumber || "Temporary_ACCOUNT_NO";
     }
   }
 
