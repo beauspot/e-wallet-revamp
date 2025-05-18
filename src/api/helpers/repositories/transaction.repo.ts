@@ -16,4 +16,8 @@ export class TransactionRepository {
     const newTransaction = this.repository.create(transaction);
     return this.repository.save(newTransaction);
   }
+
+  async saveTransaction(transaction: Partial<UserTransactionModel>) {
+    return this.repository.save(transaction);
+  }
 }
