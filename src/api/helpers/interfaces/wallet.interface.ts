@@ -16,7 +16,7 @@ export interface SessionData {
 }
 
 export interface WalletServiceInterface {
-  getWallet(userId: string): Promise<UserWallet>;
+  getWallet(userId: string): Promise<UserWallet | null>;
   getBalance(userId: string): Promise<number>;
   deposit(payload: CardChargePayload, userEmail: string): Promise<UserTransactionModel>;
   authorize(payload: AuthorizeCardPaymentPayload, sessionData: SessionData): Promise<SessionData>;
