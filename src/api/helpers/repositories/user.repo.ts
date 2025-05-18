@@ -12,7 +12,6 @@ export class UserRepository {
     this.repository = AppDataSource.getRepository(User);
   }
 
-  // Add these methods
   create(entity: Partial<User>): User {
     return this.repository.create(entity);
   }
