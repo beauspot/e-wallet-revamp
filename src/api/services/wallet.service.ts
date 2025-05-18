@@ -1,13 +1,12 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable no-unused-vars */
 import bcrypt from "bcryptjs";
-import { Repository } from "typeorm";
 import { injectable, inject } from "tsyringe";
 import { FlutterwaveService as Flw } from "@/api/helpers/integrations/flutterwave";
 // import { AppDataSource } from "@/configs/db.config";
 import { UserTransactionModel } from "@/db/transactions.entity";
-import { User } from "@/db/user.entity";
-import { UserWallet } from "@/db/wallet.entity";
+
+
 import { TransactionType, TransactionStatus, PaymentType } from "@/enum/transactions.enum";
 import {
   CardChargePayload,
@@ -17,28 +16,22 @@ import {
 import { WalletServiceInterface, SessionData } from "@/interfaces/wallet.interface";
 import AppError from "@/utils/appErrors";
 import { generateReference } from "@/utils/generateRef";
+import { UserWalletRepository as walletRepo } from "@/repositories/userWallet.repo"
+import { UserRepository  as userRepo} from "@/repositories/user.repo";
+import { TransactionRepository } from "@/repositories/transaction.repo";
 
 @injectable()
 export class WalletService implements WalletServiceInterface {
   constructor(
-    @inject(UserWallet) private wallet: Repository<UserWallet>,
+    @inject(walletRepo) private wallet: walletRepo,
     @inject(Flw) private flw: Flw,
-    @inject(UserTransactionModel) private transaction: Repository<UserTransactionModel>,
-    @inject(User) private __user__: Repository<User>
+    @inject(TransactionRepository) private transaction: TransactionRepository,
+    @inject(userRepo) private __user__: userRepo
   ) {}
 
-  async getWallet(userId: string): Promise<UserWallet> {
+  async getWallet(userId: string) {
     // const walletRepo = AppDataSource.getRepository(this.wallet);
-    const userWallet = await this.wallet.findOne({
-      where: { user: { id: userId } },
-      relations: ["user"]
-    });
-
-    if (!userWallet) {
-      throw new AppError("Wallet Not found Please contact administrator", 400, false);
-    }
-
-    return userWallet;
+    return this.wallet.findByUserId(userId);
   }
 
   async getBalance(userId: string): Promise<number> {
@@ -123,7 +116,7 @@ export class WalletService implements WalletServiceInterface {
       currency: response.data.currency,
       recipient: response.data.account_number.replace(/(?<=.{4})./g, "*"),
       description: response.data.narration,
-      user: { id: userId },
+      user: user,
       status:
         response.data.status === "NEW"
           ? TransactionStatus.Pending
@@ -133,8 +126,8 @@ export class WalletService implements WalletServiceInterface {
     };
 
     // const transactionRepo = AppDataSource.getRepository(this.transaction);
-    const wallet_transaction = this.transaction.create(transaction);
-    await this.transaction.save(wallet_transaction);
+    const wallet_transaction = await this.transaction.createTransaction(transaction);
+    await this.transaction.saveTransaction(wallet_transaction);
     return wallet_transaction;
   }
 }
