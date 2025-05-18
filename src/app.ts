@@ -4,6 +4,7 @@ import rateLimit from "express-rate-limit";
 // import swaggerUi from "swagger-ui-express";
 import session from "express-session";
 
+import compression from "compression";
 import cors from "cors";
 // import path from "path";
 // import YAML from "yamljs";
@@ -69,6 +70,8 @@ function createAppServer(): Express {
       }
     })
   );
+
+  app.use(compression());
 
   if (process.env.NODE_ENV === "development") {
     app.use(logging_middleware);
